@@ -1,11 +1,11 @@
 # Enhanced Golang Map: support one unique key and multi search indices for each value #
 Add some multi-index support into the original golang map:
+
 1. Each value in the emap must has one unique key.
 
 2. Each value in the emap can have multi indices.
 
 3. One index can related to multi values in the emap.
-
 
 ## Interfaces ##
 EMap:

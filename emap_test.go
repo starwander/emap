@@ -22,31 +22,31 @@ var _ = Describe("Tests of emap", func() {
 
 		It("Given an empty emap, when add a new item, it should be able to get by key or index later.", func() {
 			Expect(emap.HasKey("key1")).To(Equal(false))
-			err := emap.Add("key1", "value1", "index1", "index2", "index3")
+			err := emap.Insert("key1", "value1", "index1", "index2", "index3")
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(emap.HasKey("key1")).To(Equal(true))
-			result1, err := emap.GetByKey("key1")
+			result1, err := emap.FetchByKey("key1")
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(result1).To(BeEquivalentTo("value1"))
 
-			result2, err := emap.GetByIndex("index1")
+			result2, err := emap.FetchByIndex("index1")
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(result2).To(BeEquivalentTo([]interface{}{"value1"}))
 
-			result3, err := emap.GetByIndex("index2")
+			result3, err := emap.FetchByIndex("index2")
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(result3).To(BeEquivalentTo([]interface{}{"value1"}))
 
-			result4, err := emap.GetByIndex("index3")
+			result4, err := emap.FetchByIndex("index3")
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(result4).To(BeEquivalentTo([]interface{}{"value1"}))
 		})
 
 		It("Given an emap with key1, when add a new item with the same key1, it should fail.", func() {
-			err := emap.Add("key1", "value1", "index1", "index2")
+			err := emap.Insert("key1", "value1", "index1", "index2")
 			Expect(err).ShouldNot(HaveOccurred())
 
-			err = emap.Add("key1", "value2", "index3")
+			err = emap.Insert("key1", "value2", "index3")
 			Expect(err).Should(HaveOccurred())
 
 			Expect(emap.KeyNum()).To(BeEquivalentTo(1))
@@ -55,16 +55,16 @@ var _ = Describe("Tests of emap", func() {
 		})
 
 		It("Given an empty emap, when delete a item with the key1, it should fail.", func() {
-			err := emap.Remove("key1")
+			err := emap.DeleteByKey("key1")
 			Expect(err).Should(HaveOccurred())
 		})
 
 		It("Given an emap with multi values, when delete by key, it should delete the value and indices of the key.", func() {
-			err := emap.Add("key1", "value1", "index1", "index2")
+			err := emap.Insert("key1", "value1", "index1", "index2")
 			Expect(err).ShouldNot(HaveOccurred())
-			err = emap.Add("key2", "value2", "index3")
+			err = emap.Insert("key2", "value2", "index3")
 			Expect(err).ShouldNot(HaveOccurred())
-			result1, err := emap.GetByIndex("index2")
+			result1, err := emap.FetchByIndex("index2")
 			Expect(result1).To(BeEquivalentTo([]interface{}{"value1"}))
 
 			Expect(emap.KeyNum()).To(BeEquivalentTo(2))
@@ -72,11 +72,11 @@ var _ = Describe("Tests of emap", func() {
 			Expect(emap.IndexNumOfKey("key1")).To(BeEquivalentTo(2))
 			Expect(emap.IndexNumOfKey("key2")).To(BeEquivalentTo(1))
 
-			err = emap.Remove("key1")
+			err = emap.DeleteByKey("key1")
 			Expect(err).ShouldNot(HaveOccurred())
-			_, err = emap.GetByKey("key1")
+			_, err = emap.FetchByKey("key1")
 			Expect(err).Should(HaveOccurred())
-			result2, err := emap.GetByKey("key2")
+			result2, err := emap.FetchByKey("key2")
 			Expect(result2).To(BeEquivalentTo("value2"))
 			Expect(emap.KeyNum()).To(BeEquivalentTo(1))
 			Expect(emap.IndexNum()).To(BeEquivalentTo(1))
@@ -85,7 +85,7 @@ var _ = Describe("Tests of emap", func() {
 			Expect(emap.HasKey("key1")).To(Equal(false))
 			Expect(emap.HasKey("key2")).To(Equal(true))
 
-			err = emap.Remove("key2")
+			err = emap.DeleteByKey("key2")
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(emap.HasKey("key1")).To(Equal(false))
 			Expect(emap.KeyNum()).To(BeEquivalentTo(0))
@@ -93,7 +93,7 @@ var _ = Describe("Tests of emap", func() {
 		})
 
 		It("Given an emap without key1, when add index by key1, it should fail.", func() {
-			err := emap.Add("key2", "value2")
+			err := emap.Insert("key2", "value2")
 			Expect(err).ShouldNot(HaveOccurred())
 			err = emap.AddIndex("key1", "index1")
 			Expect(err).Should(HaveOccurred())
@@ -102,20 +102,20 @@ var _ = Describe("Tests of emap", func() {
 		})
 
 		It("Given an emap with key1, when add new indices by key1, it should get key1's value by the new indices later.", func() {
-			err := emap.Add("key1", "value1")
+			err := emap.Insert("key1", "value1")
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(emap.IndexNum()).To(BeEquivalentTo(0))
 
 			err = emap.AddIndex("key1", "index1")
 			Expect(err).ShouldNot(HaveOccurred())
-			result1, err := emap.GetByIndex("index1")
+			result1, err := emap.FetchByIndex("index1")
 			Expect(result1).To(BeEquivalentTo([]interface{}{"value1"}))
 			Expect(emap.KeyNum()).To(BeEquivalentTo(1))
 			Expect(emap.IndexNum()).To(BeEquivalentTo(1))
 
 			err = emap.AddIndex("key1", "index2")
 			Expect(err).ShouldNot(HaveOccurred())
-			result2, err := emap.GetByIndex("index2")
+			result2, err := emap.FetchByIndex("index2")
 			Expect(result2).To(BeEquivalentTo([]interface{}{"value1"}))
 			Expect(emap.KeyNum()).To(BeEquivalentTo(1))
 			Expect(emap.IndexNum()).To(BeEquivalentTo(2))
@@ -135,18 +135,18 @@ var _ = Describe("Tests of emap", func() {
 
 		It("Given an empty emap, when add values with different keys but same index, it should be able to get all values by the index.", func() {
 			Expect(emap.HasIndex("index1")).To(Equal(false))
-			err := emap.Add("key1", "value1", "index1", "index2")
+			err := emap.Insert("key1", "value1", "index1", "index2")
 			Expect(emap.HasIndex("index1")).To(Equal(true))
 			Expect(err).ShouldNot(HaveOccurred())
-			err = emap.Add("key2", "value2", "index1")
+			err = emap.Insert("key2", "value2", "index1")
 			Expect(err).ShouldNot(HaveOccurred())
-			err = emap.Add("key3", "value3", "index2")
+			err = emap.Insert("key3", "value3", "index2")
 			Expect(err).ShouldNot(HaveOccurred())
 
-			result1, err := emap.GetByIndex("index1")
+			result1, err := emap.FetchByIndex("index1")
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(result1).To(BeEquivalentTo([]interface{}{"value1", "value2"}))
-			result2, err := emap.GetByIndex("index2")
+			result2, err := emap.FetchByIndex("index2")
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(result2).To(BeEquivalentTo([]interface{}{"value1", "value3"}))
 			Expect(emap.KeyNum()).To(BeEquivalentTo(3))
@@ -154,47 +154,72 @@ var _ = Describe("Tests of emap", func() {
 		})
 
 		It("Given an emap with multi keys with same index, when delete index by key, it should not affect other keys.", func() {
-			err := emap.Add("key1", "value1", "index1", "index2")
+			err := emap.Insert("key1", "value1", "index1", "index2")
 			Expect(err).ShouldNot(HaveOccurred())
-			err = emap.Add("key2", "value2", "index1")
+			err = emap.Insert("key2", "value2", "index1")
 			Expect(err).ShouldNot(HaveOccurred())
-			err = emap.Add("key3", "value3", "index2")
+			err = emap.Insert("key3", "value3", "index2")
 			Expect(err).ShouldNot(HaveOccurred())
 
-			result1, err := emap.GetByIndex("index1")
+			result1, err := emap.FetchByIndex("index1")
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(result1).To(BeEquivalentTo([]interface{}{"value1", "value2"}))
 
 			err = emap.RemoveIndex("key1", "index1")
 			Expect(err).ShouldNot(HaveOccurred())
-			result2, err := emap.GetByIndex("index1")
+			result2, err := emap.FetchByIndex("index1")
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(result2).To(BeEquivalentTo([]interface{}{"value2"}))
 
 			err = emap.RemoveIndex("key3", "index2")
 			Expect(err).ShouldNot(HaveOccurred())
-			result3, err := emap.GetByIndex("index2")
+			result3, err := emap.FetchByIndex("index2")
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(result3).To(BeEquivalentTo([]interface{}{"value1"}))
 		})
 
-		It("Given an emap with multi keys and indices, when remove item by key, it should remove the key from its indices.", func() {
-			err := emap.Add("key1", "value1", "index1", "index2")
+		It("Given an emap with multi keys and indices, when remove item by key, it should remove the related value and indices.", func() {
+			err := emap.Insert("key1", "value1", "index1", "index2")
 			Expect(err).ShouldNot(HaveOccurred())
-			err = emap.Add("key2", "value2", "index2")
+			err = emap.Insert("key2", "value2", "index2")
 			Expect(err).ShouldNot(HaveOccurred())
-			err = emap.Add("key3", "value3", "index2")
+			err = emap.Insert("key3", "value3", "index2")
 			Expect(err).ShouldNot(HaveOccurred())
 
-			err = emap.Remove("key1")
+			err = emap.DeleteByKey("key1")
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(emap.HasIndex("index1")).To(Equal(false))
 			Expect(emap.HasIndex("index2")).To(Equal(true))
-			_, err = emap.GetByIndex("index1")
+			_, err = emap.FetchByKey("key1")
 			Expect(err).Should(HaveOccurred())
-			result1, err := emap.GetByIndex("index2")
+			_, err = emap.FetchByIndex("index1")
+			Expect(err).Should(HaveOccurred())
+			result1, err := emap.FetchByIndex("index2")
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(result1).To(BeEquivalentTo([]interface{}{"value2", "value3"}))
+		})
+
+		It("Given an emap with multi keys and indices, when remove item by index, it should remove all values related.", func() {
+			err := emap.Insert("key1", "value1", "index1", "index2")
+			Expect(err).ShouldNot(HaveOccurred())
+			err = emap.Insert("key2", "value2", "index2")
+			Expect(err).ShouldNot(HaveOccurred())
+			err = emap.Insert("key3", "value3", "index1", "index3")
+			Expect(err).ShouldNot(HaveOccurred())
+
+			err = emap.DeleteByIndex("index2")
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(emap.HasIndex("index2")).To(Equal(false))
+			Expect(emap.HasKey("key1")).To(Equal(false))
+			_, err = emap.FetchByIndex("index2")
+			Expect(err).Should(HaveOccurred())
+			_, err = emap.FetchByKey("key1")
+			Expect(err).Should(HaveOccurred())
+			result, err := emap.FetchByIndex("index1")
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(result).To(BeEquivalentTo([]interface{}{"value3"}))
+			Expect(emap.KeyNum()).To(BeEquivalentTo(1))
+			Expect(emap.IndexNum()).To(BeEquivalentTo(2))
 		})
 	})
 
@@ -224,16 +249,16 @@ var _ = Describe("Tests of emap", func() {
 			emap, err := NewStrictEMap("key", testStruct{"123"}, 123)
 			Expect(err).ShouldNot(HaveOccurred())
 
-			err = emap.Add("key", testStruct{"123"}, "123")
+			err = emap.Insert("key", testStruct{"123"}, "123")
 			Expect(err).Should(HaveOccurred())
 
-			err = emap.Add(123, testStruct{"123"}, 123)
+			err = emap.Insert(123, testStruct{"123"}, 123)
 			Expect(err).Should(HaveOccurred())
 
-			err = emap.Add("sample", "test", 123)
+			err = emap.Insert("sample", "test", 123)
 			Expect(err).Should(HaveOccurred())
 
-			err = emap.Add("sample", anotherStruct{"123"}, 123)
+			err = emap.Insert("sample", anotherStruct{"123"}, 123)
 			Expect(err).Should(HaveOccurred())
 
 			Expect(emap.KeyNum()).To(BeEquivalentTo(0))
@@ -243,14 +268,14 @@ var _ = Describe("Tests of emap", func() {
 		It("Given an strict emap, when use its interfaces, it should check the type of input paras.", func() {
 			emap, err := NewStrictEMap("key", testStruct{"123"}, 123)
 			Expect(err).ShouldNot(HaveOccurred())
-			err = emap.Add("key", testStruct{"123"}, 123)
+			err = emap.Insert("key", testStruct{"123"}, 123)
 			Expect(err).ShouldNot(HaveOccurred())
 
-			err = emap.Remove(123)
+			err = emap.DeleteByKey(123)
 			Expect(err).Should(HaveOccurred())
-			_, err = emap.GetByKey(123)
+			_, err = emap.FetchByKey(123)
 			Expect(err).Should(HaveOccurred())
-			_, err = emap.GetByIndex("123")
+			_, err = emap.FetchByIndex("123")
 			Expect(err).Should(HaveOccurred())
 			err = emap.AddIndex("key", "123")
 			Expect(err).Should(HaveOccurred())
@@ -277,7 +302,7 @@ var _ = Describe("Tests of emap", func() {
 
 			Expect(emap.HasKey("key1")).To(Equal(false))
 			value := new(testStruct)
-			err := emap.Add("key1", value, "index1", "index2", "index3")
+			err := emap.Insert("key1", value, "index1", "index2", "index3")
 			Expect(err).Should(HaveOccurred())
 			Expect(emap.HasKey("key1")).To(Equal(false))
 		})
@@ -285,10 +310,10 @@ var _ = Describe("Tests of emap", func() {
 		It("Given an interval to an expirable emap, when the value is expired, it should be collected.", func() {
 			Expect(emap.HasKey("key1")).To(Equal(false))
 			value := new(expirebleStruct)
-			err := emap.Add("key1", value, "index1", "index2", "index3")
+			err := emap.Insert("key1", value, "index1", "index2", "index3")
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(emap.HasKey("key1")).To(Equal(true))
-			_, err = emap.GetByKey("key1")
+			_, err = emap.FetchByKey("key1")
 			Expect(err).ShouldNot(HaveOccurred())
 
 			time.Sleep(time.Second)
@@ -310,18 +335,18 @@ var _ = Describe("Tests of emap", func() {
 
 		It("Given an empty emap, when add values with different keys but same index, it should be able to get all values by the index.", func() {
 			Expect(emap.HasIndex("index1")).To(Equal(false))
-			err := emap.Add("key1", "value1", "index1", "index2")
+			err := emap.Insert("key1", "value1", "index1", "index2")
 			Expect(emap.HasIndex("index1")).To(Equal(true))
 			Expect(err).ShouldNot(HaveOccurred())
-			err = emap.Add("key2", "value2", "index1")
+			err = emap.Insert("key2", "value2", "index1")
 			Expect(err).ShouldNot(HaveOccurred())
-			err = emap.Add("key3", "value3", "index2")
+			err = emap.Insert("key3", "value3", "index2")
 			Expect(err).ShouldNot(HaveOccurred())
 
-			result1, err := emap.GetByIndex("index1")
+			result1, err := emap.FetchByIndex("index1")
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(result1).To(BeEquivalentTo([]interface{}{"value1", "value2"}))
-			result2, err := emap.GetByIndex("index2")
+			result2, err := emap.FetchByIndex("index2")
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(result2).To(BeEquivalentTo([]interface{}{"value1", "value3"}))
 			Expect(emap.KeyNum()).To(BeEquivalentTo(3))
@@ -329,45 +354,45 @@ var _ = Describe("Tests of emap", func() {
 		})
 
 		It("Given an emap with multi keys with same index, when delete index by key, it should not affect other keys.", func() {
-			err := emap.Add("key1", "value1", "index1", "index2")
+			err := emap.Insert("key1", "value1", "index1", "index2")
 			Expect(err).ShouldNot(HaveOccurred())
-			err = emap.Add("key2", "value2", "index1")
+			err = emap.Insert("key2", "value2", "index1")
 			Expect(err).ShouldNot(HaveOccurred())
-			err = emap.Add("key3", "value3", "index2")
+			err = emap.Insert("key3", "value3", "index2")
 			Expect(err).ShouldNot(HaveOccurred())
 
-			result1, err := emap.GetByIndex("index1")
+			result1, err := emap.FetchByIndex("index1")
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(result1).To(BeEquivalentTo([]interface{}{"value1", "value2"}))
 
 			err = emap.RemoveIndex("key1", "index1")
 			Expect(err).ShouldNot(HaveOccurred())
-			result2, err := emap.GetByIndex("index1")
+			result2, err := emap.FetchByIndex("index1")
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(result2).To(BeEquivalentTo([]interface{}{"value2"}))
 
 			err = emap.RemoveIndex("key3", "index2")
 			Expect(err).ShouldNot(HaveOccurred())
-			result3, err := emap.GetByIndex("index2")
+			result3, err := emap.FetchByIndex("index2")
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(result3).To(BeEquivalentTo([]interface{}{"value1"}))
 		})
 
 		It("Given an emap with multi keys and indices, when remove item by key, it should remove the key from its indices.", func() {
-			err := emap.Add("key1", "value1", "index1", "index2")
+			err := emap.Insert("key1", "value1", "index1", "index2")
 			Expect(err).ShouldNot(HaveOccurred())
-			err = emap.Add("key2", "value2", "index2")
+			err = emap.Insert("key2", "value2", "index2")
 			Expect(err).ShouldNot(HaveOccurred())
-			err = emap.Add("key3", "value3", "index2")
+			err = emap.Insert("key3", "value3", "index2")
 			Expect(err).ShouldNot(HaveOccurred())
 
-			err = emap.Remove("key1")
+			err = emap.DeleteByKey("key1")
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(emap.HasIndex("index1")).To(Equal(false))
 			Expect(emap.HasIndex("index2")).To(Equal(true))
-			_, err = emap.GetByIndex("index1")
+			_, err = emap.FetchByIndex("index1")
 			Expect(err).Should(HaveOccurred())
-			result1, err := emap.GetByIndex("index2")
+			result1, err := emap.FetchByIndex("index2")
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(result1).To(BeEquivalentTo([]interface{}{"value2", "value3"}))
 		})
@@ -465,13 +490,13 @@ func GoMapDel(goMap map[interface{}]interface{}, number int) {
 
 func EMapAdd(emap EMap, number int) {
 	for i := 0; i < number; i++ {
-		emap.Add(string(i), &expirebleStruct{false, i})
+		emap.Insert(string(i), &expirebleStruct{false, i})
 	}
 }
 
 func EMapGet(emap EMap, number int) (dump interface{}) {
 	for i := 0; i < number; i++ {
-		value, _ := emap.GetByKey(string(i))
+		value, _ := emap.FetchByKey(string(i))
 		dump = value.(*expirebleStruct).number
 	}
 	return
@@ -479,6 +504,6 @@ func EMapGet(emap EMap, number int) (dump interface{}) {
 
 func EMapDel(emap EMap, number int) {
 	for i := 0; i < number; i++ {
-		emap.Remove(string(i))
+		emap.DeleteByKey(string(i))
 	}
 }

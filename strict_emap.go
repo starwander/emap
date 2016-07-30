@@ -8,9 +8,9 @@ import (
 
 type strictEMap struct {
 	mtx     sync.RWMutex
-	store   map[interface{}]interface{}   // key -> value
-	keys    map[interface{}][]interface{} // key -> indices
-	indices map[interface{}][]interface{} // index -> keys
+	Store   map[interface{}]interface{}   // key -> value
+	Keys    map[interface{}][]interface{} // key -> indices
+	Indices map[interface{}][]interface{} // index -> keys
 
 	keyType     reflect.Kind
 	indexType   reflect.Kind
@@ -45,14 +45,14 @@ func (m *strictEMap) KeyNum() int {
 	m.mtx.RLock()
 	defer m.mtx.RUnlock()
 
-	return len(m.keys)
+	return len(m.Keys)
 }
 
 func (m *strictEMap) KeyNumOfIndex(index interface{}) int {
 	m.mtx.RLock()
 	defer m.mtx.RUnlock()
 
-	if keys, exist := m.indices[index]; exist {
+	if keys, exist := m.Indices[index]; exist {
 		return len(keys)
 	}
 
@@ -63,7 +63,7 @@ func (m *strictEMap) IndexNum() int {
 	m.mtx.RLock()
 	defer m.mtx.RUnlock()
 
-	return len(m.indices)
+	return len(m.Indices)
 }
 
 func (m *strictEMap) IndexNumOfKey(key interface{}) int {
@@ -74,7 +74,7 @@ func (m *strictEMap) IndexNumOfKey(key interface{}) int {
 		return 0
 	}
 
-	if indices, exist := m.keys[key]; exist {
+	if indices, exist := m.Keys[key]; exist {
 		return len(indices)
 	}
 
@@ -89,7 +89,7 @@ func (m *strictEMap) HasKey(key interface{}) bool {
 		return false
 	}
 
-	if _, exist := m.keys[key]; exist {
+	if _, exist := m.Keys[key]; exist {
 		return true
 	}
 
@@ -104,14 +104,14 @@ func (m *strictEMap) HasIndex(index interface{}) bool {
 		return false
 	}
 
-	if _, exist := m.indices[index]; exist {
+	if _, exist := m.Indices[index]; exist {
 		return true
 	}
 
 	return false
 }
 
-func (m *strictEMap) Add(key interface{}, value interface{}, indices ...interface{}) error {
+func (m *strictEMap) Insert(key interface{}, value interface{}, indices ...interface{}) error {
 	m.mtx.Lock()
 	defer m.mtx.Unlock()
 
@@ -132,27 +132,10 @@ func (m *strictEMap) Add(key interface{}, value interface{}, indices ...interfac
 		}
 	}
 
-	if _, exist := m.keys[key]; exist {
-		return errors.New("key duplicte")
-	}
-
-	m.keys[key] = indices
-	m.store[key] = value
-
-	for _, index := range indices {
-		if keys, exist := m.indices[index]; exist {
-			m.indices[index] = append(keys, key)
-		} else {
-			keys = make([]interface{}, 1)
-			keys[0] = key
-			m.indices[index] = keys
-		}
-	}
-
-	return nil
+	return add(m, key, value, indices...)
 }
 
-func (m *strictEMap) GetByKey(key interface{}) (interface{}, error) {
+func (m *strictEMap) FetchByKey(key interface{}) (interface{}, error) {
 	m.mtx.RLock()
 	defer m.mtx.RUnlock()
 
@@ -160,14 +143,10 @@ func (m *strictEMap) GetByKey(key interface{}) (interface{}, error) {
 		return nil, errors.New("key type wrong")
 	}
 
-	if value, exist := m.store[key]; exist {
-		return value, nil
-	}
-
-	return nil, errors.New("key not exist")
+	return fetchByKey(m, key)
 }
 
-func (m *strictEMap) GetByIndex(index interface{}) ([]interface{}, error) {
+func (m *strictEMap) FetchByIndex(index interface{}) ([]interface{}, error) {
 	m.mtx.RLock()
 	defer m.mtx.RUnlock()
 
@@ -175,54 +154,25 @@ func (m *strictEMap) GetByIndex(index interface{}) ([]interface{}, error) {
 		return nil, errors.New("index type wrong")
 	}
 
-	if keys, exist := m.indices[index]; exist {
-		i := 0
-		values := make([]interface{}, len(keys))
-		for _, key := range keys {
-			values[i] = m.store[key]
-			i++
-		}
-		return values, nil
-	}
-
-	return nil, errors.New("index not exist")
+	return fetchByIndex(m, index)
 }
 
-func (m *strictEMap) Remove(key interface{}) error {
+func (m *strictEMap) DeleteByKey(key interface{}) error {
 	m.mtx.Lock()
 	defer m.mtx.Unlock()
 
-	return m.remove(key)
+	return deleteByKey(m, key)
 }
 
-func (m *strictEMap) remove(key interface{}) error {
-	if m.keyType != reflect.TypeOf(key).Kind() {
-		return errors.New("key type wrong")
+func (m *strictEMap) DeleteByIndex(index interface{}) error {
+	m.mtx.Lock()
+	defer m.mtx.Unlock()
+
+	if m.indexType != reflect.TypeOf(index).Kind() {
+		return errors.New("index type wrong")
 	}
 
-	if _, exist := m.keys[key]; !exist {
-		return errors.New("key not exist")
-	}
-
-	for _, index := range m.keys[key] {
-		for i, each := range m.indices[index] {
-			if each == key {
-				if i == len(m.indices[index])-1 {
-					m.indices[index] = m.indices[index][:i]
-					break
-				}
-				m.indices[index] = append(m.indices[index][:i], m.indices[index][i+1:]...)
-			}
-		}
-		if len(m.indices[index]) == 0 {
-			delete(m.indices, index)
-		}
-	}
-
-	delete(m.keys, key)
-	delete(m.store, key)
-
-	return nil
+	return deleteByIndex(m, index)
 }
 
 func (m *strictEMap) AddIndex(key interface{}, index interface{}) error {
@@ -237,26 +187,7 @@ func (m *strictEMap) AddIndex(key interface{}, index interface{}) error {
 		return errors.New("index type wrong")
 	}
 
-	if _, exist := m.keys[key]; !exist {
-		return errors.New("key not exist")
-	}
-
-	for _, each := range m.keys[key] {
-		if each == index {
-			return errors.New("index duplicte")
-		}
-	}
-	m.keys[key] = append(m.keys[key], index)
-
-	if keys, exist := m.indices[index]; exist {
-		m.indices[index] = append(keys, key)
-	} else {
-		keys = make([]interface{}, 1)
-		keys[0] = key
-		m.indices[index] = keys
-	}
-
-	return nil
+	return addIndex(m, key, index)
 }
 
 func (m *strictEMap) RemoveIndex(key interface{}, index interface{}) error {
@@ -271,36 +202,5 @@ func (m *strictEMap) RemoveIndex(key interface{}, index interface{}) error {
 		return errors.New("index type wrong")
 	}
 
-	if _, exist := m.keys[key]; !exist {
-		return errors.New("key not exist")
-	}
-
-	if _, exist := m.indices[index]; !exist {
-		return errors.New("index not exist")
-	}
-
-	for i, each := range m.keys[key] {
-		if each == index {
-			if i == len(m.keys[key])-1 {
-				m.keys[key] = m.keys[key][:i]
-				break
-			}
-			m.keys[key] = append(m.keys[key][:i], m.keys[key][i+1:]...)
-		}
-	}
-
-	for i, each := range m.indices[index] {
-		if each == key {
-			if i == len(m.indices[index])-1 {
-				m.indices[index] = m.indices[index][:i]
-				break
-			}
-			m.indices[index] = append(m.indices[index][:i], m.indices[index][i+1:]...)
-		}
-	}
-	if len(m.indices[index]) == 0 {
-		delete(m.indices, index)
-	}
-
-	return nil
+	return removeIndex(m, key, index)
 }

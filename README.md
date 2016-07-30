@@ -9,10 +9,11 @@ Add some multi-index support into the original golang map:
 
 ## Interfaces ##
 EMap:
-- Add(key interface{}, value interface{}, indices ...interface{}) error
-- Remove(key interface{}) error
-- GetByKey(key interface{}) (interface{}, error)
-- GetByIndex(index interface{}) ([]interface{}, error)
+- Insert(key interface{}, value interface{}, indices ...interface{}) error
+- FetchByKey(key interface{}) (interface{}, error)
+- FetchByIndex(index interface{}) ([]interface{}, error)
+- DeleteByKey(key interface{}) error
+- DeleteByIndex(index interface{}) error
 - AddIndex(key interface{}, index interface{}) error
 - RemoveIndex(key interface{}, index interface{}) error
 - KeyNum() int

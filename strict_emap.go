@@ -204,3 +204,10 @@ func (m *strictEMap) RemoveIndex(key interface{}, index interface{}) error {
 
 	return removeIndex(m, key, index)
 }
+
+func (m *strictEMap) Transform(callback func(interface{}, interface{})(error, interface{})) ([]error, []interface{}) {
+	m.mtx.RLock()
+	defer m.mtx.RUnlock()
+
+	return  transform(m, callback)
+}

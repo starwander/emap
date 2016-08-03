@@ -145,3 +145,10 @@ func (m *expirableEMap) RemoveIndex(key interface{}, index interface{}) error {
 
 	return removeIndex(m, key, index)
 }
+
+func (m *expirableEMap) Transform(callback func(interface{}, interface{})(error, interface{})) ([]error, []interface{}) {
+	m.mtx.RLock()
+	defer m.mtx.RUnlock()
+
+	return  transform(m, callback)
+}

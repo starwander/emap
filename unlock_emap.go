@@ -73,3 +73,7 @@ func (m *unlockEMap) AddIndex(key interface{}, index interface{}) error {
 func (m *unlockEMap) RemoveIndex(key interface{}, index interface{}) error {
 	return removeIndex(m, key, index)
 }
+
+func (m *unlockEMap) Transform(callback func(interface{}, interface{})(error, interface{})) ([]error, []interface{}) {
+	return  transform(m, callback)
+}

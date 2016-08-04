@@ -127,7 +127,7 @@ func (m *strictEMap) Insert(key interface{}, value interface{}, indices ...inter
 	if m.valueType != reflect.TypeOf(value).Kind() {
 		return errors.New("value type wrong")
 	} else {
-		if m.valueStruct != reflect.ValueOf(value).Type().Name() {
+		if m.valueType == reflect.Struct && m.valueStruct != reflect.ValueOf(value).Type().Name() {
 			return errors.New("struct type wrong")
 		}
 	}
@@ -209,5 +209,5 @@ func (m *strictEMap) Transform(callback func(interface{}, interface{})(error, in
 	m.mtx.RLock()
 	defer m.mtx.RUnlock()
 
-	return  transform(m, callback)
+	return transform(m, callback)
 }

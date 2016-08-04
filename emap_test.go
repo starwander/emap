@@ -1,6 +1,7 @@
 package emap
 
 import (
+	"errors"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"time"
@@ -395,6 +396,58 @@ var _ = Describe("Tests of emap", func() {
 			result1, err := emap.FetchByIndex("index2")
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(result1).To(BeEquivalentTo([]interface{}{"value2", "value3"}))
+		})
+	})
+
+	Context("Higher-order functions", func() {
+		type testStruct struct {
+			data string
+		}
+		type anotherStruct struct {
+			data string
+		}
+
+		BeforeEach(func() {
+			emap, _ = NewStrictEMap("key", 123, "123")
+		})
+
+		AfterEach(func() {
+			emap = nil
+		})
+
+		It("Given an emap, when call Transform interface, it should return the trasformed values related to the callback.", func() {
+			emap.Insert("key1", 1, "index1")
+			emap.Insert("key2", 2, "index2")
+			emap.Insert("key3", 3, "index3")
+			Expect(emap.KeyNum()).Should(BeEquivalentTo(3))
+
+			callback := func(key interface{}, value interface{}) (interface{}, error) {
+				return value.(int) + 10, nil
+			}
+			targets, err := emap.Transform(callback)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(len(targets)).Should(BeEquivalentTo(emap.KeyNum()))
+			Expect(targets["key1"]).Should(BeEquivalentTo(11))
+			Expect(targets["key2"]).Should(BeEquivalentTo(12))
+			Expect(targets["key3"]).Should(BeEquivalentTo(13))
+		})
+
+		It("Given an emap, when call Transform interface, it should fail when callback fails.", func() {
+			emap.Insert("key1", 1, "index1")
+			emap.Insert("key2", 2, "index2")
+			emap.Insert("key3", 3, "index3")
+			emap.Insert("keyError", 123)
+			Expect(emap.KeyNum()).Should(BeEquivalentTo(4))
+
+			callback := func(key interface{}, value interface{}) (interface{}, error) {
+				if key == "keyError" {
+					return nil, errors.New("error key")
+				}
+				return value.(int) + 10, nil
+			}
+			targets, err := emap.Transform(callback)
+			Expect(err).Should(HaveOccurred())
+			Expect(len(targets)).Should(BeEquivalentTo(0))
 		})
 	})
 

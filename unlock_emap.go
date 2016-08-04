@@ -74,6 +74,6 @@ func (m *unlockEMap) RemoveIndex(key interface{}, index interface{}) error {
 	return removeIndex(m, key, index)
 }
 
-func (m *unlockEMap) Transform(callback func(interface{}, interface{})(error, interface{})) ([]error, []interface{}) {
-	return  transform(m, callback)
+func (m *unlockEMap) Transform(callback func(interface{}, interface{}) (interface{}, error)) (map[interface{}]interface{}, error) {
+	return transform(m, callback)
 }

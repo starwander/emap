@@ -146,9 +146,9 @@ func (m *expirableEMap) RemoveIndex(key interface{}, index interface{}) error {
 	return removeIndex(m, key, index)
 }
 
-func (m *expirableEMap) Transform(callback func(interface{}, interface{})(error, interface{})) ([]error, []interface{}) {
+func (m *expirableEMap) Transform(callback func(interface{}, interface{}) (interface{}, error)) (map[interface{}]interface{}, error) {
 	m.mtx.RLock()
 	defer m.mtx.RUnlock()
 
-	return  transform(m, callback)
+	return transform(m, callback)
 }

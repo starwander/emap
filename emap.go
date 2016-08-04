@@ -19,7 +19,7 @@ type EMap interface {
 	IndexNumOfKey(key interface{}) int
 	HasKey(key interface{}) bool
 	HasIndex(index interface{}) bool
-	Transform(callback func(interface{}, interface{})(error, interface{})) ([]error, []interface{})
+	Transform(callback func(interface{}, interface{}) (interface{}, error)) (map[interface{}]interface{}, error)
 }
 
 func NewGenericEMap() EMap {
@@ -227,18 +227,19 @@ func removeIndex(emap interface{}, key interface{}, index interface{}) error {
 	return nil
 }
 
-func transform(emap interface{}, callback func(interface{}, interface{})(error, interface{})) ([]error, []interface{}) {
+func transform(emap interface{}, callback func(interface{}, interface{}) (interface{}, error)) (map[interface{}]interface{}, error) {
 	Object := reflect.ValueOf(emap).Elem()
 	Store := Object.FieldByName("Store").Interface().(map[interface{}]interface{})
 
-	i := 0
-	errs := make([]error, len(Store))
-	targets := make([]interface{}, len(Store))
+	var err error
+	targets := make(map[interface{}]interface{}, len(Store))
 
 	for key, value := range Store {
-		errs[i], targets[i] = callback(key, value)
-		i++
+		targets[key], err = callback(key, value)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return  errs, targets
+	return targets, nil
 }

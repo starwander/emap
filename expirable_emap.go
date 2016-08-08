@@ -152,3 +152,7 @@ func (m *expirableEMap) Transform(callback func(interface{}, interface{}) (inter
 
 	return transform(m, callback)
 }
+
+func (m *expirableEMap) Foreach(callback func(interface{}, interface{}) error) error {
+	return foreach(m, callback)
+}

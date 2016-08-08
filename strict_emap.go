@@ -211,3 +211,7 @@ func (m *strictEMap) Transform(callback func(interface{}, interface{}) (interfac
 
 	return transform(m, callback)
 }
+
+func (m *strictEMap) Foreach(callback func(interface{}, interface{}) error) error {
+	return foreach(m, callback)
+}

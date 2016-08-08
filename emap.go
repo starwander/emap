@@ -20,6 +20,7 @@ type EMap interface {
 	HasKey(key interface{}) bool
 	HasIndex(index interface{}) bool
 	Transform(callback func(interface{}, interface{}) (interface{}, error)) (map[interface{}]interface{}, error)
+	Foreach(callback func(interface{}, interface{}) error) error
 }
 
 func NewGenericEMap() EMap {
@@ -242,4 +243,18 @@ func transform(emap interface{}, callback func(interface{}, interface{}) (interf
 	}
 
 	return targets, nil
+}
+
+func foreach(emap interface{}, callback func(interface{}, interface{}) error) error {
+	Object := reflect.ValueOf(emap).Elem()
+	Store := Object.FieldByName("Store").Interface().(map[interface{}]interface{})
+
+	var err error
+	for key, value := range Store {
+		if err = callback(key, value); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

@@ -23,6 +23,7 @@ EMap:
 - HasKey(key interface{}) bool
 - HasIndex(index interface{}) bool
 - Transform(callback func(interface{}, interface{})(interface{}, error)) (map[interface{}]interface{}, error)
+- Foreach(callback func(interface{}, interface{}) error) error
 
 ExpirableValue:
 - IsExpired() bool

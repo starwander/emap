@@ -449,6 +449,39 @@ var _ = Describe("Tests of emap", func() {
 			Expect(err).Should(HaveOccurred())
 			Expect(len(targets)).Should(BeEquivalentTo(0))
 		})
+
+		It("Given an emap, when call Foreach interface, it should apply callback to each item.", func() {
+			emap.Insert("key1", 1, "index1")
+			emap.Insert("key2", 2, "index2")
+			emap.Insert("key3", 3, "index3")
+			Expect(emap.KeyNum()).Should(BeEquivalentTo(3))
+
+			sum := 0
+			callback := func(key interface{}, value interface{}) error {
+				sum = sum + value.(int)
+				return nil
+			}
+			err := emap.Foreach(callback)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(sum).To(BeEquivalentTo(6))
+		})
+
+		It("Given an emap, when call Foreach interface, it should fail when callback fails.", func() {
+			emap.Insert("key1", 1, "index1")
+			emap.Insert("key2", 2, "index2")
+			emap.Insert("key3", 3, "index3")
+			emap.Insert("keyError", 123)
+			Expect(emap.KeyNum()).Should(BeEquivalentTo(4))
+
+			callback := func(key interface{}, value interface{}) error {
+				if key == "keyError" {
+					return errors.New("error key")
+				}
+				return nil
+			}
+			err := emap.Foreach(callback)
+			Expect(err).Should(HaveOccurred())
+		})
 	})
 
 	Context("benchmark emap", func() {

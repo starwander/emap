@@ -124,3 +124,7 @@ func (m *genericEMap) Transform(callback func(interface{}, interface{}) (interfa
 
 	return transform(m, callback)
 }
+
+func (m *genericEMap) Foreach(callback func(interface{}, interface{}) error) error {
+	return foreach(m, callback)
+}

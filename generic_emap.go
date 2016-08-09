@@ -1,14 +1,35 @@
 package emap
 
 import (
+	"errors"
+	"reflect"
 	"sync"
+	"time"
 )
 
 type genericEMap struct {
-	mtx     sync.RWMutex
-	Store   map[interface{}]interface{}   // key -> value
-	Keys    map[interface{}][]interface{} // key -> indices
-	Indices map[interface{}][]interface{} // index -> keys
+	mtx      sync.RWMutex
+	interval int
+	Store    map[interface{}]interface{}   // key -> value
+	Keys     map[interface{}][]interface{} // key -> indices
+	Indices  map[interface{}][]interface{} // index -> keys
+}
+
+func (m *genericEMap) collect(interval int) {
+	ticker := time.NewTicker(time.Duration(interval) * time.Millisecond)
+	for {
+
+		select {
+		case <-ticker.C:
+			m.mtx.Lock()
+			for key, value := range m.Store {
+				if value.(ExpirableValue).IsExpired() {
+					deleteByKey(m, key)
+				}
+			}
+			m.mtx.Unlock()
+		}
+	}
 }
 
 func (m *genericEMap) KeyNum() int {
@@ -73,6 +94,12 @@ func (m *genericEMap) Insert(key interface{}, value interface{}, indices ...inte
 	m.mtx.Lock()
 	defer m.mtx.Unlock()
 
+	if m.interval > 0 {
+		if _, has := reflect.TypeOf(value).MethodByName("IsExpired"); !has {
+			return errors.New("value type wrong")
+		}
+	}
+
 	return add(m, key, value, indices...)
 }
 
@@ -125,6 +152,6 @@ func (m *genericEMap) Transform(callback func(interface{}, interface{}) (interfa
 	return transform(m, callback)
 }
 
-func (m *genericEMap) Foreach(callback func(interface{}, interface{}) error) error {
-	return foreach(m, callback)
+func (m *genericEMap) Foreach(callback func(interface{}, interface{})) {
+	foreach(m, callback)
 }

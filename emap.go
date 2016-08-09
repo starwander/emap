@@ -20,7 +20,11 @@ type EMap interface {
 	HasKey(key interface{}) bool
 	HasIndex(index interface{}) bool
 	Transform(callback func(interface{}, interface{}) (interface{}, error)) (map[interface{}]interface{}, error)
-	Foreach(callback func(interface{}, interface{}) error) error
+	Foreach(callback func(interface{}, interface{}))
+}
+
+type ExpirableValue interface {
+	IsExpired() bool
 }
 
 func NewGenericEMap() EMap {
@@ -33,12 +37,15 @@ func NewGenericEMap() EMap {
 }
 
 func NewExpirableEMap(interval int) EMap {
-	instance := new(expirableEMap)
+	instance := new(genericEMap)
 	instance.Store = make(map[interface{}]interface{})
 	instance.Keys = make(map[interface{}][]interface{})
 	instance.Indices = make(map[interface{}][]interface{})
 
-	go instance.collect(interval)
+	if interval > 0 {
+		instance.interval = interval
+		go instance.collect(interval)
+	}
 
 	return instance
 }
@@ -245,16 +252,11 @@ func transform(emap interface{}, callback func(interface{}, interface{}) (interf
 	return targets, nil
 }
 
-func foreach(emap interface{}, callback func(interface{}, interface{}) error) error {
+func foreach(emap interface{}, callback func(interface{}, interface{})) {
 	Object := reflect.ValueOf(emap).Elem()
 	Store := Object.FieldByName("Store").Interface().(map[interface{}]interface{})
 
-	var err error
 	for key, value := range Store {
-		if err = callback(key, value); err != nil {
-			return err
-		}
+		callback(key, value)
 	}
-
-	return nil
 }

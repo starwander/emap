@@ -224,6 +224,44 @@ var _ = Describe("Tests of emap", func() {
 		})
 	})
 
+	Context("expirable values", func() {
+		BeforeEach(func() {
+			emap = NewExpirableEMap(100)
+		})
+
+		AfterEach(func() {
+			emap = nil
+		})
+
+		It("Given an expirable emap, when the value added has not IsExpired interface, it should fail.", func() {
+			type testStruct struct {
+				expired bool
+			}
+
+			Expect(emap.HasKey("key1")).To(Equal(false))
+			value := new(testStruct)
+			err := emap.Insert("key1", value, "index1", "index2", "index3")
+			Expect(err).Should(HaveOccurred())
+			Expect(emap.HasKey("key1")).To(Equal(false))
+		})
+
+		It("Given an interval to an expirable emap, when the value is expired, it should be collected.", func() {
+			Expect(emap.HasKey("key1")).To(Equal(false))
+			value := new(expirebleStruct)
+			err := emap.Insert("key1", value, "index1", "index2", "index3")
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(emap.HasKey("key1")).To(Equal(true))
+			_, err = emap.FetchByKey("key1")
+			Expect(err).ShouldNot(HaveOccurred())
+
+			time.Sleep(time.Second)
+			Expect(emap.HasKey("key1")).To(Equal(true))
+			value.expired = true
+			time.Sleep(time.Second)
+			Expect(emap.HasKey("key1")).To(Equal(false))
+		})
+	})
+
 	Context("strict emap", func() {
 		type testStruct struct {
 			data string
@@ -284,44 +322,6 @@ var _ = Describe("Tests of emap", func() {
 			Expect(err).Should(HaveOccurred())
 			Expect(emap.IndexNumOfKey(123)).Should(Equal(0))
 			Expect(emap.KeyNumOfIndex("123")).Should(Equal(0))
-		})
-	})
-
-	Context("expirable emap", func() {
-		BeforeEach(func() {
-			emap = NewExpirableEMap(100)
-		})
-
-		AfterEach(func() {
-			emap = nil
-		})
-
-		It("Given an expirable emap, when the value added has not IsExpired interface, it should fail.", func() {
-			type testStruct struct {
-				expired bool
-			}
-
-			Expect(emap.HasKey("key1")).To(Equal(false))
-			value := new(testStruct)
-			err := emap.Insert("key1", value, "index1", "index2", "index3")
-			Expect(err).Should(HaveOccurred())
-			Expect(emap.HasKey("key1")).To(Equal(false))
-		})
-
-		It("Given an interval to an expirable emap, when the value is expired, it should be collected.", func() {
-			Expect(emap.HasKey("key1")).To(Equal(false))
-			value := new(expirebleStruct)
-			err := emap.Insert("key1", value, "index1", "index2", "index3")
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(emap.HasKey("key1")).To(Equal(true))
-			_, err = emap.FetchByKey("key1")
-			Expect(err).ShouldNot(HaveOccurred())
-
-			time.Sleep(time.Second)
-			Expect(emap.HasKey("key1")).To(Equal(true))
-			value.expired = true
-			time.Sleep(time.Second)
-			Expect(emap.HasKey("key1")).To(Equal(false))
 		})
 	})
 
@@ -408,7 +408,7 @@ var _ = Describe("Tests of emap", func() {
 		}
 
 		BeforeEach(func() {
-			emap, _ = NewStrictEMap("key", 123, "123")
+			emap = NewGenericEMap()
 		})
 
 		AfterEach(func() {
@@ -451,36 +451,21 @@ var _ = Describe("Tests of emap", func() {
 		})
 
 		It("Given an emap, when call Foreach interface, it should apply callback to each item.", func() {
-			emap.Insert("key1", 1, "index1")
-			emap.Insert("key2", 2, "index2")
-			emap.Insert("key3", 3, "index3")
+			type testStruct struct {
+				num int
+			}
+			emap.Insert("key1", &testStruct{1}, "index1")
+			emap.Insert("key2", &testStruct{2}, "index2")
+			emap.Insert("key3", &testStruct{3}, "index3")
 			Expect(emap.KeyNum()).Should(BeEquivalentTo(3))
 
-			sum := 0
-			callback := func(key interface{}, value interface{}) error {
-				sum = sum + value.(int)
-				return nil
+			callback := func(key interface{}, value interface{}) {
+				value.(*testStruct).num = value.(*testStruct).num + 10
 			}
-			err := emap.Foreach(callback)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(sum).To(BeEquivalentTo(6))
-		})
-
-		It("Given an emap, when call Foreach interface, it should fail when callback fails.", func() {
-			emap.Insert("key1", 1, "index1")
-			emap.Insert("key2", 2, "index2")
-			emap.Insert("key3", 3, "index3")
-			emap.Insert("keyError", 123)
-			Expect(emap.KeyNum()).Should(BeEquivalentTo(4))
-
-			callback := func(key interface{}, value interface{}) error {
-				if key == "keyError" {
-					return errors.New("error key")
-				}
-				return nil
-			}
-			err := emap.Foreach(callback)
-			Expect(err).Should(HaveOccurred())
+			emap.Foreach(callback)
+			Expect(emap.FetchByKey("key1")).To(BeEquivalentTo(&testStruct{11}))
+			Expect(emap.FetchByKey("key2")).To(BeEquivalentTo(&testStruct{12}))
+			Expect(emap.FetchByKey("key3")).To(BeEquivalentTo(&testStruct{13}))
 		})
 	})
 
@@ -503,17 +488,6 @@ var _ = Describe("Tests of emap", func() {
 		Measure("Benchmark the generic emap performance", func(b Benchmarker) {
 			eMap := NewGenericEMap()
 			EMapRuntime := b.Time("GenericEMap", func() {
-				EMapAdd(eMap, 200000)
-				EMapGet(eMap, 200000)
-				EMapDel(eMap, 200000)
-			})
-
-			Ω(EMapRuntime.Seconds()).Should(BeNumerically("<", 2), "Add/Get/Del 200000 values shouldn't take too long.")
-		}, 10)
-
-		Measure("Benchmark the expirable emap performance", func(b Benchmarker) {
-			eMap := NewExpirableEMap(1000)
-			EMapRuntime := b.Time("ExpirableEMap", func() {
 				EMapAdd(eMap, 200000)
 				EMapGet(eMap, 200000)
 				EMapDel(eMap, 200000)

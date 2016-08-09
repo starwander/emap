@@ -78,6 +78,6 @@ func (m *unlockEMap) Transform(callback func(interface{}, interface{}) (interfac
 	return transform(m, callback)
 }
 
-func (m *unlockEMap) Foreach(callback func(interface{}, interface{}) error) error {
-	return foreach(m, callback)
+func (m *unlockEMap) Foreach(callback func(interface{}, interface{})) {
+	foreach(m, callback)
 }

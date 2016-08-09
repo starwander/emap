@@ -8,7 +8,7 @@ Add some multi-index support into the original golang map:
 3. One index can related to multi values in the emap.
 
 ## Interfaces ##
-EMap:
+Basic Operations:
 - Insert(key interface{}, value interface{}, indices ...interface{}) error
 - FetchByKey(key interface{}) (interface{}, error)
 - FetchByIndex(index interface{}) ([]interface{}, error)
@@ -22,8 +22,10 @@ EMap:
 - IndexNumOfKey(key interface{}) int
 - HasKey(key interface{}) bool
 - HasIndex(index interface{}) bool
+
+Higher-order Operations:
 - Transform(callback func(interface{}, interface{})(interface{}, error)) (map[interface{}]interface{}, error)
-- Foreach(callback func(interface{}, interface{}) error) error
+- Foreach(callback func(interface{}, interface{}))
 
 ExpirableValue:
 - IsExpired() bool

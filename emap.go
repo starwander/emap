@@ -92,6 +92,10 @@ func insert(emap interface{}, key interface{}, value interface{}, indices ...int
 		return errors.New("key duplicte")
 	}
 
+	if value == nil {
+		return errors.New("insert nil value")
+	}
+
 	Keys[key] = indices
 	Store[key] = value
 
@@ -111,6 +115,9 @@ func fetchByKey(emap interface{}, key interface{}) (interface{}, error) {
 	Store := Object.FieldByName("Store").Interface().(map[interface{}]interface{})
 
 	if value, exist := Store[key]; exist {
+		if value == nil {
+			return nil, errors.New("fetch nil value by key")
+		}
 		return value, nil
 	}
 
@@ -126,6 +133,9 @@ func fetchByIndex(emap interface{}, index interface{}) ([]interface{}, error) {
 		i := 0
 		values := make([]interface{}, len(keys))
 		for _, key := range keys {
+			if Store[key] == nil {
+				return nil, errors.New("fetch nil value by index")
+			}
 			values[i] = Store[key]
 			i++
 		}

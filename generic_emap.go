@@ -153,5 +153,8 @@ func (m *genericEMap) Transform(callback func(interface{}, interface{}) (interfa
 }
 
 func (m *genericEMap) Foreach(callback func(interface{}, interface{})) {
+	m.mtx.RLock()
+	defer m.mtx.RUnlock()
+
 	foreach(m, callback)
 }

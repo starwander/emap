@@ -213,5 +213,8 @@ func (m *strictEMap) Transform(callback func(interface{}, interface{}) (interfac
 }
 
 func (m *strictEMap) Foreach(callback func(interface{}, interface{})) {
+	m.mtx.RLock()
+	defer m.mtx.RUnlock()
+
 	foreach(m, callback)
 }

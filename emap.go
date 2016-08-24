@@ -123,11 +123,9 @@ func fetchByIndex(emap interface{}, index interface{}) ([]interface{}, error) {
 	Indices := Object.FieldByName("Indices").Interface().(map[interface{}][]interface{})
 
 	if keys, exist := Indices[index]; exist {
-		i := 0
 		values := make([]interface{}, len(keys))
-		for _, key := range keys {
+		for i, key := range keys {
 			values[i] = Store[key]
-			i++
 		}
 		return values, nil
 	}

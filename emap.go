@@ -188,9 +188,7 @@ func addIndex(emap interface{}, key interface{}, index interface{}) error {
 	if keys, exist := Indices[index]; exist {
 		Indices[index] = append(keys, key)
 	} else {
-		keys = make([]interface{}, 1)
-		keys[0] = key
-		Indices[index] = keys
+		Indices[index] = []interface{}{key}
 	}
 
 	return nil
@@ -213,9 +211,10 @@ func removeIndex(emap interface{}, key interface{}, index interface{}) error {
 		if each == index {
 			if i == len(Keys[key])-1 {
 				Keys[key] = Keys[key][:i]
-				break
+			} else {
+				Keys[key] = append(Keys[key][:i], Keys[key][i+1:]...)
 			}
-			Keys[key] = append(Keys[key][:i], Keys[key][i+1:]...)
+			break
 		}
 	}
 
@@ -223,9 +222,10 @@ func removeIndex(emap interface{}, key interface{}, index interface{}) error {
 		if each == key {
 			if i == len(Indices[index])-1 {
 				Indices[index] = Indices[index][:i]
-				break
+			} else {
+				Indices[index] = append(Indices[index][:i], Indices[index][i+1:]...)
 			}
-			Indices[index] = append(Indices[index][:i], Indices[index][i+1:]...)
+			break
 		}
 	}
 	if len(Indices[index]) == 0 {

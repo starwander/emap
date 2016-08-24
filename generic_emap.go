@@ -100,7 +100,7 @@ func (m *genericEMap) Insert(key interface{}, value interface{}, indices ...inte
 		}
 	}
 
-	return add(m, key, value, indices...)
+	return insert(m, key, value, indices...)
 }
 
 func (m *genericEMap) FetchByKey(key interface{}) (interface{}, error) {

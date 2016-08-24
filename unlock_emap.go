@@ -47,7 +47,7 @@ func (m *unlockEMap) HasIndex(index interface{}) bool {
 }
 
 func (m *unlockEMap) Insert(key interface{}, value interface{}, indices ...interface{}) error {
-	return add(m, key, value, indices...)
+	return insert(m, key, value, indices...)
 }
 
 func (m *unlockEMap) FetchByKey(key interface{}) (interface{}, error) {

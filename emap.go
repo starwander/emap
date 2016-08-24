@@ -82,7 +82,7 @@ func NewUnlockEMap() EMap {
 	return instance
 }
 
-func add(emap interface{}, key interface{}, value interface{}, indices ...interface{}) error {
+func insert(emap interface{}, key interface{}, value interface{}, indices ...interface{}) error {
 	Object := reflect.ValueOf(emap).Elem()
 	Store := Object.FieldByName("Store").Interface().(map[interface{}]interface{})
 	Keys := Object.FieldByName("Keys").Interface().(map[interface{}][]interface{})

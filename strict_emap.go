@@ -132,7 +132,7 @@ func (m *strictEMap) Insert(key interface{}, value interface{}, indices ...inter
 		}
 	}
 
-	return add(m, key, value, indices...)
+	return insert(m, key, value, indices...)
 }
 
 func (m *strictEMap) FetchByKey(key interface{}) (interface{}, error) {

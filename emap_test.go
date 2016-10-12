@@ -116,7 +116,7 @@ var _ = Describe("Tests of emap", func() {
 
 			err = emap.AddIndex("key1", "index2")
 			Expect(err).ShouldNot(HaveOccurred())
-			result2, err := emap.FetchByIndex("index2")
+			result2, _ := emap.FetchByIndex("index2")
 			Expect(result2).To(BeEquivalentTo([]interface{}{"value1"}))
 			Expect(emap.KeyNum()).To(BeEquivalentTo(1))
 			Expect(emap.IndexNum()).To(BeEquivalentTo(2))

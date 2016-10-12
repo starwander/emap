@@ -19,26 +19,38 @@ type strictEMap struct {
 }
 
 func isTypeSupported(kind reflect.Kind) bool {
-	if kind == reflect.Int ||
-		kind == reflect.Int8 ||
-		kind == reflect.Int16 ||
-		kind == reflect.Int32 ||
-		kind == reflect.Int64 ||
-		kind == reflect.Uint ||
-		kind == reflect.Uint8 ||
-		kind == reflect.Uint16 ||
-		kind == reflect.Uint32 ||
-		kind == reflect.Uint64 ||
-		kind == reflect.Float32 ||
-		kind == reflect.Float64 ||
-		kind == reflect.Complex64 ||
-		kind == reflect.Complex128 ||
-		kind == reflect.Complex128 ||
-		kind == reflect.String {
-		return true
+	//if kind == reflect.Int ||
+	//kind == reflect.Int8 ||
+	//kind == reflect.Int16 ||
+	//kind == reflect.Int32 ||
+	//kind == reflect.Int64 ||
+	//kind == reflect.Uint ||
+	//kind == reflect.Uint8 ||
+	//kind == reflect.Uint16 ||
+	//kind == reflect.Uint32 ||
+	//kind == reflect.Uint64 ||
+	//kind == reflect.Float32 ||
+	//kind == reflect.Float64 ||
+	//kind == reflect.Complex64 ||
+	//kind == reflect.Complex128 ||
+	//kind == reflect.String {
+	//	return true
+	//}
+	if kind == reflect.Bool ||
+		kind == reflect.Uintptr ||
+		kind == reflect.Array ||
+		kind == reflect.Chan ||
+		kind == reflect.Func ||
+		kind == reflect.Interface ||
+		kind == reflect.Map ||
+		kind == reflect.Ptr ||
+		kind == reflect.Slice ||
+		kind == reflect.Struct ||
+		kind == reflect.UnsafePointer {
+		return false
 	}
 
-	return false
+	return true
 }
 
 func (m *strictEMap) KeyNum() int {
@@ -126,10 +138,9 @@ func (m *strictEMap) Insert(key interface{}, value interface{}, indices ...inter
 	}
 	if m.valueType != reflect.TypeOf(value).Kind() {
 		return errors.New("value type wrong")
-	} else {
-		if m.valueType == reflect.Struct && m.valueStruct != reflect.ValueOf(value).Type().Name() {
-			return errors.New("struct type wrong")
-		}
+	}
+	if m.valueType == reflect.Struct && m.valueStruct != reflect.ValueOf(value).Type().Name() {
+		return errors.New("struct type wrong")
 	}
 
 	return insert(m.values, m.keys, m.indices, key, value, indices...)

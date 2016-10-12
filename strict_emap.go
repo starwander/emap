@@ -8,9 +8,9 @@ import (
 
 type strictEMap struct {
 	mtx     sync.RWMutex
-	Store   map[interface{}]interface{}   // key -> value
-	Keys    map[interface{}][]interface{} // key -> indices
-	Indices map[interface{}][]interface{} // index -> keys
+	values  map[interface{}]interface{}   // key -> value
+	keys    map[interface{}][]interface{} // key -> indices
+	indices map[interface{}][]interface{} // index -> keys
 
 	keyType     reflect.Kind
 	indexType   reflect.Kind
@@ -45,14 +45,14 @@ func (m *strictEMap) KeyNum() int {
 	m.mtx.RLock()
 	defer m.mtx.RUnlock()
 
-	return len(m.Keys)
+	return len(m.keys)
 }
 
 func (m *strictEMap) KeyNumOfIndex(index interface{}) int {
 	m.mtx.RLock()
 	defer m.mtx.RUnlock()
 
-	if keys, exist := m.Indices[index]; exist {
+	if keys, exist := m.indices[index]; exist {
 		return len(keys)
 	}
 
@@ -63,7 +63,7 @@ func (m *strictEMap) IndexNum() int {
 	m.mtx.RLock()
 	defer m.mtx.RUnlock()
 
-	return len(m.Indices)
+	return len(m.indices)
 }
 
 func (m *strictEMap) IndexNumOfKey(key interface{}) int {
@@ -74,7 +74,7 @@ func (m *strictEMap) IndexNumOfKey(key interface{}) int {
 		return 0
 	}
 
-	if indices, exist := m.Keys[key]; exist {
+	if indices, exist := m.keys[key]; exist {
 		return len(indices)
 	}
 
@@ -89,7 +89,7 @@ func (m *strictEMap) HasKey(key interface{}) bool {
 		return false
 	}
 
-	if _, exist := m.Keys[key]; exist {
+	if _, exist := m.keys[key]; exist {
 		return true
 	}
 
@@ -104,7 +104,7 @@ func (m *strictEMap) HasIndex(index interface{}) bool {
 		return false
 	}
 
-	if _, exist := m.Indices[index]; exist {
+	if _, exist := m.indices[index]; exist {
 		return true
 	}
 
@@ -132,7 +132,7 @@ func (m *strictEMap) Insert(key interface{}, value interface{}, indices ...inter
 		}
 	}
 
-	return insert(m, key, value, indices...)
+	return insert(m.values, m.keys, m.indices, key, value, indices...)
 }
 
 func (m *strictEMap) FetchByKey(key interface{}) (interface{}, error) {
@@ -143,7 +143,7 @@ func (m *strictEMap) FetchByKey(key interface{}) (interface{}, error) {
 		return nil, errors.New("key type wrong")
 	}
 
-	return fetchByKey(m, key)
+	return fetchByKey(m.values, key)
 }
 
 func (m *strictEMap) FetchByIndex(index interface{}) ([]interface{}, error) {
@@ -154,14 +154,14 @@ func (m *strictEMap) FetchByIndex(index interface{}) ([]interface{}, error) {
 		return nil, errors.New("index type wrong")
 	}
 
-	return fetchByIndex(m, index)
+	return fetchByIndex(m.values, m.indices, index)
 }
 
 func (m *strictEMap) DeleteByKey(key interface{}) error {
 	m.mtx.Lock()
 	defer m.mtx.Unlock()
 
-	return deleteByKey(m, key)
+	return deleteByKey(m.values, m.keys, m.indices, key)
 }
 
 func (m *strictEMap) DeleteByIndex(index interface{}) error {
@@ -172,7 +172,7 @@ func (m *strictEMap) DeleteByIndex(index interface{}) error {
 		return errors.New("index type wrong")
 	}
 
-	return deleteByIndex(m, index)
+	return deleteByIndex(m.values, m.keys, m.indices, index)
 }
 
 func (m *strictEMap) AddIndex(key interface{}, index interface{}) error {
@@ -187,7 +187,7 @@ func (m *strictEMap) AddIndex(key interface{}, index interface{}) error {
 		return errors.New("index type wrong")
 	}
 
-	return addIndex(m, key, index)
+	return addIndex(m.keys, m.indices, key, index)
 }
 
 func (m *strictEMap) RemoveIndex(key interface{}, index interface{}) error {
@@ -202,19 +202,19 @@ func (m *strictEMap) RemoveIndex(key interface{}, index interface{}) error {
 		return errors.New("index type wrong")
 	}
 
-	return removeIndex(m, key, index)
+	return removeIndex(m.keys, m.indices, key, index)
 }
 
 func (m *strictEMap) Transform(callback func(interface{}, interface{}) (interface{}, error)) (map[interface{}]interface{}, error) {
 	m.mtx.RLock()
 	defer m.mtx.RUnlock()
 
-	return transform(m, callback)
+	return transform(m.values, callback)
 }
 
 func (m *strictEMap) Foreach(callback func(interface{}, interface{})) {
 	m.mtx.RLock()
 	defer m.mtx.RUnlock()
 
-	foreach(m, callback)
+	foreach(m.values, callback)
 }

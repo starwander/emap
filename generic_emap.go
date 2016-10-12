@@ -10,9 +10,9 @@ import (
 type genericEMap struct {
 	mtx      sync.RWMutex
 	interval int
-	Store    map[interface{}]interface{}   // key -> value
-	Keys     map[interface{}][]interface{} // key -> indices
-	Indices  map[interface{}][]interface{} // index -> keys
+	values   map[interface{}]interface{}   // key -> value
+	keys     map[interface{}][]interface{} // key -> indices
+	indices  map[interface{}][]interface{} // index -> keys
 }
 
 func (m *genericEMap) collect(interval int) {
@@ -22,9 +22,9 @@ func (m *genericEMap) collect(interval int) {
 		select {
 		case <-ticker.C:
 			m.mtx.Lock()
-			for key, value := range m.Store {
+			for key, value := range m.values {
 				if value.(ExpirableValue).IsExpired() {
-					deleteByKey(m, key)
+					deleteByKey(m.values, m.keys, m.indices, key)
 				}
 			}
 			m.mtx.Unlock()
@@ -36,14 +36,14 @@ func (m *genericEMap) KeyNum() int {
 	m.mtx.RLock()
 	defer m.mtx.RUnlock()
 
-	return len(m.Keys)
+	return len(m.keys)
 }
 
 func (m *genericEMap) KeyNumOfIndex(index interface{}) int {
 	m.mtx.RLock()
 	defer m.mtx.RUnlock()
 
-	if keys, exist := m.Indices[index]; exist {
+	if keys, exist := m.indices[index]; exist {
 		return len(keys)
 	}
 
@@ -54,14 +54,14 @@ func (m *genericEMap) IndexNum() int {
 	m.mtx.RLock()
 	defer m.mtx.RUnlock()
 
-	return len(m.Indices)
+	return len(m.indices)
 }
 
 func (m *genericEMap) IndexNumOfKey(key interface{}) int {
 	m.mtx.RLock()
 	defer m.mtx.RUnlock()
 
-	if indices, exist := m.Keys[key]; exist {
+	if indices, exist := m.keys[key]; exist {
 		return len(indices)
 	}
 
@@ -72,7 +72,7 @@ func (m *genericEMap) HasKey(key interface{}) bool {
 	m.mtx.RLock()
 	defer m.mtx.RUnlock()
 
-	if _, exist := m.Keys[key]; exist {
+	if _, exist := m.keys[key]; exist {
 		return true
 	}
 
@@ -83,7 +83,7 @@ func (m *genericEMap) HasIndex(index interface{}) bool {
 	m.mtx.RLock()
 	defer m.mtx.RUnlock()
 
-	if _, exist := m.Indices[index]; exist {
+	if _, exist := m.indices[index]; exist {
 		return true
 	}
 
@@ -100,61 +100,61 @@ func (m *genericEMap) Insert(key interface{}, value interface{}, indices ...inte
 		}
 	}
 
-	return insert(m, key, value, indices...)
+	return insert(m.values, m.keys, m.indices, key, value, indices...)
 }
 
 func (m *genericEMap) FetchByKey(key interface{}) (interface{}, error) {
 	m.mtx.RLock()
 	defer m.mtx.RUnlock()
 
-	return fetchByKey(m, key)
+	return fetchByKey(m.values, key)
 }
 
 func (m *genericEMap) FetchByIndex(index interface{}) ([]interface{}, error) {
 	m.mtx.RLock()
 	defer m.mtx.RUnlock()
 
-	return fetchByIndex(m, index)
+	return fetchByIndex(m.values, m.indices, index)
 }
 
 func (m *genericEMap) DeleteByKey(key interface{}) error {
 	m.mtx.Lock()
 	defer m.mtx.Unlock()
 
-	return deleteByKey(m, key)
+	return deleteByKey(m.values, m.keys, m.indices, key)
 }
 
 func (m *genericEMap) DeleteByIndex(index interface{}) error {
 	m.mtx.Lock()
 	defer m.mtx.Unlock()
 
-	return deleteByIndex(m, index)
+	return deleteByIndex(m.values, m.keys, m.indices, index)
 }
 
 func (m *genericEMap) AddIndex(key interface{}, index interface{}) error {
 	m.mtx.Lock()
 	defer m.mtx.Unlock()
 
-	return addIndex(m, key, index)
+	return addIndex(m.keys, m.indices, key, index)
 }
 
 func (m *genericEMap) RemoveIndex(key interface{}, index interface{}) error {
 	m.mtx.Lock()
 	defer m.mtx.Unlock()
 
-	return removeIndex(m, key, index)
+	return removeIndex(m.keys, m.indices, key, index)
 }
 
 func (m *genericEMap) Transform(callback func(interface{}, interface{}) (interface{}, error)) (map[interface{}]interface{}, error) {
 	m.mtx.RLock()
 	defer m.mtx.RUnlock()
 
-	return transform(m, callback)
+	return transform(m.values, callback)
 }
 
 func (m *genericEMap) Foreach(callback func(interface{}, interface{})) {
 	m.mtx.RLock()
 	defer m.mtx.RUnlock()
 
-	foreach(m, callback)
+	foreach(m.values, callback)
 }

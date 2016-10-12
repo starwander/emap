@@ -1,17 +1,17 @@
 package emap
 
 type unlockEMap struct {
-	Store   map[interface{}]interface{}   // key -> value
-	Keys    map[interface{}][]interface{} // key -> indices
-	Indices map[interface{}][]interface{} // index -> keys
+	values  map[interface{}]interface{}   // key -> value
+	keys    map[interface{}][]interface{} // key -> indices
+	indices map[interface{}][]interface{} // index -> keys
 }
 
 func (m *unlockEMap) KeyNum() int {
-	return len(m.Keys)
+	return len(m.keys)
 }
 
 func (m *unlockEMap) KeyNumOfIndex(index interface{}) int {
-	if keys, exist := m.Indices[index]; exist {
+	if keys, exist := m.indices[index]; exist {
 		return len(keys)
 	}
 
@@ -19,11 +19,11 @@ func (m *unlockEMap) KeyNumOfIndex(index interface{}) int {
 }
 
 func (m *unlockEMap) IndexNum() int {
-	return len(m.Indices)
+	return len(m.indices)
 }
 
 func (m *unlockEMap) IndexNumOfKey(key interface{}) int {
-	if indices, exist := m.Keys[key]; exist {
+	if indices, exist := m.keys[key]; exist {
 		return len(indices)
 	}
 
@@ -31,7 +31,7 @@ func (m *unlockEMap) IndexNumOfKey(key interface{}) int {
 }
 
 func (m *unlockEMap) HasKey(key interface{}) bool {
-	if _, exist := m.Keys[key]; exist {
+	if _, exist := m.keys[key]; exist {
 		return true
 	}
 
@@ -39,7 +39,7 @@ func (m *unlockEMap) HasKey(key interface{}) bool {
 }
 
 func (m *unlockEMap) HasIndex(index interface{}) bool {
-	if _, exist := m.Indices[index]; exist {
+	if _, exist := m.indices[index]; exist {
 		return true
 	}
 
@@ -47,37 +47,37 @@ func (m *unlockEMap) HasIndex(index interface{}) bool {
 }
 
 func (m *unlockEMap) Insert(key interface{}, value interface{}, indices ...interface{}) error {
-	return insert(m, key, value, indices...)
+	return insert(m.values, m.keys, m.indices, key, value, indices...)
 }
 
 func (m *unlockEMap) FetchByKey(key interface{}) (interface{}, error) {
-	return fetchByKey(m, key)
+	return fetchByKey(m.values, key)
 }
 
 func (m *unlockEMap) FetchByIndex(index interface{}) ([]interface{}, error) {
-	return fetchByIndex(m, index)
+	return fetchByIndex(m.values, m.indices, index)
 }
 
 func (m *unlockEMap) DeleteByKey(key interface{}) error {
-	return deleteByKey(m, key)
+	return deleteByKey(m.values, m.keys, m.indices, key)
 }
 
 func (m *unlockEMap) DeleteByIndex(index interface{}) error {
-	return deleteByIndex(m, index)
+	return deleteByIndex(m.values, m.keys, m.indices, index)
 }
 
 func (m *unlockEMap) AddIndex(key interface{}, index interface{}) error {
-	return addIndex(m, key, index)
+	return addIndex(m.keys, m.indices, key, index)
 }
 
 func (m *unlockEMap) RemoveIndex(key interface{}, index interface{}) error {
-	return removeIndex(m, key, index)
+	return removeIndex(m.keys, m.indices, key, index)
 }
 
 func (m *unlockEMap) Transform(callback func(interface{}, interface{}) (interface{}, error)) (map[interface{}]interface{}, error) {
-	return transform(m, callback)
+	return transform(m.values, callback)
 }
 
 func (m *unlockEMap) Foreach(callback func(interface{}, interface{})) {
-	foreach(m, callback)
+	foreach(m.values, callback)
 }

@@ -419,6 +419,7 @@ var _ = Describe("Tests of emap", func() {
 			emap, err := NewStrictEMap("key", testStruct{"123"}, 123)
 			Expect(err).ShouldNot(HaveOccurred())
 			err = emap.Insert("key", testStruct{"123"}, 123)
+			Expect(err).ShouldNot(HaveOccurred())
 
 			Expect(emap.HasKey(123)).Should(Equal(false))
 			Expect(emap.HasIndex("123")).Should(Equal(false))

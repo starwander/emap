@@ -414,6 +414,15 @@ var _ = Describe("Tests of emap", func() {
 			Expect(emap.IndexNumOfKey(123)).Should(Equal(0))
 			Expect(emap.KeyNumOfIndex("123")).Should(Equal(0))
 		})
+
+		It("Given an strict emap, when use HasKey or HasIndex interface with different key or index type, it should return false.", func() {
+			emap, err := NewStrictEMap("key", testStruct{"123"}, 123)
+			Expect(err).ShouldNot(HaveOccurred())
+			err = emap.Insert("key", testStruct{"123"}, 123)
+
+			Expect(emap.HasKey(123)).Should(Equal(false))
+			Expect(emap.HasIndex("123")).Should(Equal(false))
+		})
 	})
 
 	Context("Higher-order functions", func() {

@@ -1,4 +1,6 @@
 # Enhanced Golang Map: support one unique key and multi search indices for each value #
+[![Build Status](https://drone.io/github.com/EthanZhuang/EMap/status.png)](https://drone.io/github.com/EthanZhuang/EMap/latest)
+
 Add some multi-index support into the original golang map:
 
 1. Each value in the emap must has one unique key.
@@ -7,7 +9,7 @@ Add some multi-index support into the original golang map:
 
 3. One index can related to multi values in the emap.
 
-## Interfaces ##
+## Usage ##
 Basic Operations:
 - Insert(key interface{}, value interface{}, indices ...interface{}) error
 - FetchByKey(key interface{}) (interface{}, error)

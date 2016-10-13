@@ -5,25 +5,14 @@ package emap
 import (
 	"errors"
 	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 	"time"
 )
 
 var _ = Describe("Tests of emap", func() {
-	var (
-		emap EMap
-	)
-
 	Context("one unique key and multi indices", func() {
-		BeforeEach(func() {
-			emap = NewGenericEMap()
-		})
-
-		AfterEach(func() {
-			emap = nil
-		})
-
-		It("Given an empty emap, when add a new item, it should be able to get by key or index later.", func() {
+		DescribeTable("Given an empty emap, when add a new item, it should be able to get by key or index later.", func(emap EMap) {
 			Expect(emap.HasKey("key1")).To(Equal(false))
 			err := emap.Insert("key1", "value1", "index1", "index2", "index3")
 			Expect(err).ShouldNot(HaveOccurred())
@@ -43,9 +32,13 @@ var _ = Describe("Tests of emap", func() {
 			result4, err := emap.FetchByIndex("index3")
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(result4).To(BeEquivalentTo([]interface{}{"value1"}))
-		})
+		},
+			Entry("generic emap test", NewGenericEMap()),
+			Entry("strict emap test", NewStrictEmapWrapper()),
+			Entry("nolock emap test", NewUnlockEMap()),
+		)
 
-		It("Given an emap with key1, when add a new item with the same key1, it should fail.", func() {
+		DescribeTable("Given an emap with key1, when add a new item with the same key1, it should fail.", func(emap EMap) {
 			err := emap.Insert("key1", "value1", "index1", "index2")
 			Expect(err).ShouldNot(HaveOccurred())
 
@@ -55,14 +48,22 @@ var _ = Describe("Tests of emap", func() {
 			Expect(emap.KeyNum()).To(BeEquivalentTo(1))
 			Expect(emap.IndexNum()).To(BeEquivalentTo(2))
 			Expect(emap.IndexNumOfKey("key1")).To(BeEquivalentTo(2))
-		})
+		},
+			Entry("generic emap test", NewGenericEMap()),
+			Entry("strict emap test", NewStrictEmapWrapper()),
+			Entry("nolock emap test", NewUnlockEMap()),
+		)
 
-		It("Given an empty emap, when delete a item with the key1, it should fail.", func() {
+		DescribeTable("Given an empty emap, when delete a item with the key1, it should fail.", func(emap EMap) {
 			err := emap.DeleteByKey("key1")
 			Expect(err).Should(HaveOccurred())
-		})
+		},
+			Entry("generic emap test", NewGenericEMap()),
+			Entry("strict emap test", NewStrictEmapWrapper()),
+			Entry("nolock emap test", NewUnlockEMap()),
+		)
 
-		It("Given an emap with multi values, when delete by key, it should delete the value and indices of the key.", func() {
+		DescribeTable("Given an emap with multi values, when delete by key, it should delete the value and indices of the key.", func(emap EMap) {
 			err := emap.Insert("key1", "value1", "index1", "index2")
 			Expect(err).ShouldNot(HaveOccurred())
 			err = emap.Insert("key2", "value2", "index3")
@@ -93,24 +94,36 @@ var _ = Describe("Tests of emap", func() {
 			Expect(emap.HasKey("key1")).To(Equal(false))
 			Expect(emap.KeyNum()).To(BeEquivalentTo(0))
 			Expect(emap.IndexNum()).To(BeEquivalentTo(0))
-		})
+		},
+			Entry("generic emap test", NewGenericEMap()),
+			Entry("strict emap test", NewStrictEmapWrapper()),
+			Entry("nolock emap test", NewUnlockEMap()),
+		)
 
-		It("Given an emap without key1, when add index by key1, it should fail.", func() {
+		DescribeTable("Given an emap without key1, when add index by key1, it should fail.", func(emap EMap) {
 			err := emap.Insert("key2", "value2")
 			Expect(err).ShouldNot(HaveOccurred())
 			err = emap.AddIndex("key1", "index1")
 			Expect(err).Should(HaveOccurred())
 			Expect(emap.KeyNum()).To(BeEquivalentTo(1))
 			Expect(emap.IndexNum()).To(BeEquivalentTo(0))
-		})
+		},
+			Entry("generic emap test", NewGenericEMap()),
+			Entry("strict emap test", NewStrictEmapWrapper()),
+			Entry("nolock emap test", NewUnlockEMap()),
+		)
 
-		It("Given an emap with key1 and index1, when add index1 to key1 again, it should fail.", func() {
+		DescribeTable("Given an emap with key1 and index1, when add index1 to key1 again, it should fail.", func(emap EMap) {
 			emap.Insert("key1", "value1", "index1")
 			err := emap.AddIndex("key1", "index1")
 			Expect(err).Should(HaveOccurred())
-		})
+		},
+			Entry("generic emap test", NewGenericEMap()),
+			Entry("strict emap test", NewStrictEmapWrapper()),
+			Entry("nolock emap test", NewUnlockEMap()),
+		)
 
-		It("Given an emap with key1, when add new index by key1, it should get key1's value by the new indices later.", func() {
+		DescribeTable("Given an emap with key1, when add new index by key1, it should get key1's value by the new indices later.", func(emap EMap) {
 			err := emap.Insert("key1", "value1")
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(emap.IndexNum()).To(BeEquivalentTo(0))
@@ -129,26 +142,25 @@ var _ = Describe("Tests of emap", func() {
 			Expect(emap.KeyNum()).To(BeEquivalentTo(1))
 			Expect(emap.IndexNum()).To(BeEquivalentTo(2))
 			Expect(emap.IndexNumOfKey("key1")).To(BeEquivalentTo(2))
-		})
+		},
+			Entry("generic emap test", NewGenericEMap()),
+			Entry("strict emap test", NewStrictEmapWrapper()),
+			Entry("nolock emap test", NewUnlockEMap()),
+		)
 
-		It("Given an emap with key1 and index1, when remove index from a non-existed key, it should fail.", func() {
+		DescribeTable("Given an emap with key1 and index1, when remove index from a non-existed key, it should fail.", func(emap EMap) {
 			emap.Insert("key1", "value1", "index1")
 			err := emap.RemoveIndex("key2", "index1")
 			Expect(err).Should(HaveOccurred())
-		})
-
+		},
+			Entry("generic emap test", NewGenericEMap()),
+			Entry("strict emap test", NewStrictEmapWrapper()),
+			Entry("nolock emap test", NewUnlockEMap()),
+		)
 	})
 
 	Context("multi key and one index", func() {
-		BeforeEach(func() {
-			emap = NewGenericEMap()
-		})
-
-		AfterEach(func() {
-			emap = nil
-		})
-
-		It("Given an empty emap, when add values with different keys but same index, it should be able to get all values by the index.", func() {
+		DescribeTable("Given an empty emap, when add values with different keys but same index, it should be able to get all values by the index.", func(emap EMap) {
 			Expect(emap.HasIndex("index1")).To(Equal(false))
 			err := emap.Insert("key1", "value1", "index1", "index2")
 			Expect(emap.HasIndex("index1")).To(Equal(true))
@@ -168,9 +180,13 @@ var _ = Describe("Tests of emap", func() {
 			Expect(emap.IndexNum()).To(BeEquivalentTo(2))
 			Expect(emap.KeyNumOfIndex("index1")).To(BeEquivalentTo(2))
 			Expect(emap.KeyNumOfIndex("index2")).To(BeEquivalentTo(2))
-		})
+		},
+			Entry("generic emap test", NewGenericEMap()),
+			Entry("strict emap test", NewStrictEmapWrapper()),
+			Entry("nolock emap test", NewUnlockEMap()),
+		)
 
-		It("Given an emap with multi keys with same index, when delete index by key, it should not affect other keys.", func() {
+		DescribeTable("Given an emap with multi keys with same index, when delete index by key, it should not affect other keys.", func(emap EMap) {
 			err := emap.Insert("key1", "value1", "index1", "index2")
 			Expect(err).ShouldNot(HaveOccurred())
 			err = emap.Insert("key2", "value2", "index1")
@@ -193,9 +209,13 @@ var _ = Describe("Tests of emap", func() {
 			result3, err := emap.FetchByIndex("index2")
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(result3).To(BeEquivalentTo([]interface{}{"value1"}))
-		})
+		},
+			Entry("generic emap test", NewGenericEMap()),
+			Entry("strict emap test", NewStrictEmapWrapper()),
+			Entry("nolock emap test", NewUnlockEMap()),
+		)
 
-		It("Given an emap with multi keys and indices, when remove item by key, it should remove the related value and indices.", func() {
+		DescribeTable("Given an emap with multi keys and indices, when remove item by key, it should remove the related value and indices.", func(emap EMap) {
 			err := emap.Insert("key1", "value1", "index1", "index2")
 			Expect(err).ShouldNot(HaveOccurred())
 			err = emap.Insert("key2", "value2", "index2")
@@ -214,9 +234,13 @@ var _ = Describe("Tests of emap", func() {
 			result1, err := emap.FetchByIndex("index2")
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(result1).To(BeEquivalentTo([]interface{}{"value2", "value3"}))
-		})
+		},
+			Entry("generic emap test", NewGenericEMap()),
+			Entry("strict emap test", NewStrictEmapWrapper()),
+			Entry("nolock emap test", NewUnlockEMap()),
+		)
 
-		It("Given an emap with multi keys and indices, when delete a item with a non-existed index, it should fail.", func() {
+		DescribeTable("Given an emap with multi keys and indices, when delete a item with a non-existed index, it should fail.", func(emap EMap) {
 			err := emap.Insert("key1", "value1", "index1", "index2")
 			Expect(err).ShouldNot(HaveOccurred())
 			err = emap.Insert("key2", "value2", "index2")
@@ -224,9 +248,13 @@ var _ = Describe("Tests of emap", func() {
 
 			err = emap.DeleteByIndex("index3")
 			Expect(err).Should(HaveOccurred())
-		})
+		},
+			Entry("generic emap test", NewGenericEMap()),
+			Entry("strict emap test", NewStrictEmapWrapper()),
+			Entry("nolock emap test", NewUnlockEMap()),
+		)
 
-		It("Given an emap with multi keys and indices, when remove item by index, it should remove all values related.", func() {
+		DescribeTable("Given an emap with multi keys and indices, when remove item by index, it should remove all values related.", func(emap EMap) {
 			err := emap.Insert("key1", "value1", "index1", "index2")
 			Expect(err).ShouldNot(HaveOccurred())
 			err = emap.Insert("key2", "value2", "index2")
@@ -247,9 +275,13 @@ var _ = Describe("Tests of emap", func() {
 			Expect(result).To(BeEquivalentTo([]interface{}{"value3"}))
 			Expect(emap.KeyNum()).To(BeEquivalentTo(1))
 			Expect(emap.IndexNum()).To(BeEquivalentTo(2))
-		})
+		},
+			Entry("generic emap test", NewGenericEMap()),
+			Entry("strict emap test", NewStrictEmapWrapper()),
+			Entry("nolock emap test", NewUnlockEMap()),
+		)
 
-		It("Given an emap with multi keys and indices, when add a existed index to another value, it should be able to get all values by the index later.", func() {
+		DescribeTable("Given an emap with multi keys and indices, when add a existed index to another value, it should be able to get all values by the index later.", func(emap EMap) {
 			err := emap.Insert("key1", "value1", "index1", "index")
 			Expect(err).ShouldNot(HaveOccurred())
 			err = emap.Insert("key2", "value2", "index2")
@@ -262,10 +294,18 @@ var _ = Describe("Tests of emap", func() {
 			result, err = emap.FetchByIndex("index")
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(result).To(BeEquivalentTo([]interface{}{"value1", "value2"}))
-		})
+		},
+			Entry("generic emap test", NewGenericEMap()),
+			Entry("strict emap test", NewStrictEmapWrapper()),
+			Entry("nolock emap test", NewUnlockEMap()),
+		)
 	})
 
 	Context("expirable values", func() {
+		var (
+			emap EMap
+		)
+
 		BeforeEach(func() {
 			emap = NewExpirableEMap(100)
 		})
@@ -367,6 +407,10 @@ var _ = Describe("Tests of emap", func() {
 	})
 
 	Context("Higher-order functions", func() {
+		var (
+			emap EMap
+		)
+
 		type testStruct struct {
 			data string
 		}
@@ -486,6 +530,11 @@ var _ = Describe("Tests of emap", func() {
 		}, 10)
 	})
 })
+
+func NewStrictEmapWrapper() (emap EMap) {
+	emap, _ = NewStrictEMap("key", "value", "index")
+	return
+}
 
 type expirebleStruct struct {
 	expired bool

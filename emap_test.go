@@ -34,7 +34,7 @@ var _ = Describe("Tests of emap", func() {
 			Expect(result4).To(BeEquivalentTo([]interface{}{"value1"}))
 		},
 			Entry("generic emap test", NewGenericEMap()),
-			Entry("strict emap test", NewStrictEmapWrapper()),
+			Entry("strict emap test", NewStrictEmapWrapper("key", "value", "index")),
 			Entry("nolock emap test", NewUnlockEMap()),
 		)
 
@@ -50,7 +50,7 @@ var _ = Describe("Tests of emap", func() {
 			Expect(emap.IndexNumOfKey("key1")).To(BeEquivalentTo(2))
 		},
 			Entry("generic emap test", NewGenericEMap()),
-			Entry("strict emap test", NewStrictEmapWrapper()),
+			Entry("strict emap test", NewStrictEmapWrapper("key", "value", "index")),
 			Entry("nolock emap test", NewUnlockEMap()),
 		)
 
@@ -59,7 +59,7 @@ var _ = Describe("Tests of emap", func() {
 			Expect(err).Should(HaveOccurred())
 		},
 			Entry("generic emap test", NewGenericEMap()),
-			Entry("strict emap test", NewStrictEmapWrapper()),
+			Entry("strict emap test", NewStrictEmapWrapper("key", "value", "index")),
 			Entry("nolock emap test", NewUnlockEMap()),
 		)
 
@@ -96,7 +96,7 @@ var _ = Describe("Tests of emap", func() {
 			Expect(emap.IndexNum()).To(BeEquivalentTo(0))
 		},
 			Entry("generic emap test", NewGenericEMap()),
-			Entry("strict emap test", NewStrictEmapWrapper()),
+			Entry("strict emap test", NewStrictEmapWrapper("key", "value", "index")),
 			Entry("nolock emap test", NewUnlockEMap()),
 		)
 
@@ -109,7 +109,7 @@ var _ = Describe("Tests of emap", func() {
 			Expect(emap.IndexNum()).To(BeEquivalentTo(0))
 		},
 			Entry("generic emap test", NewGenericEMap()),
-			Entry("strict emap test", NewStrictEmapWrapper()),
+			Entry("strict emap test", NewStrictEmapWrapper("key", "value", "index")),
 			Entry("nolock emap test", NewUnlockEMap()),
 		)
 
@@ -119,7 +119,7 @@ var _ = Describe("Tests of emap", func() {
 			Expect(err).Should(HaveOccurred())
 		},
 			Entry("generic emap test", NewGenericEMap()),
-			Entry("strict emap test", NewStrictEmapWrapper()),
+			Entry("strict emap test", NewStrictEmapWrapper("key", "value", "index")),
 			Entry("nolock emap test", NewUnlockEMap()),
 		)
 
@@ -144,7 +144,7 @@ var _ = Describe("Tests of emap", func() {
 			Expect(emap.IndexNumOfKey("key1")).To(BeEquivalentTo(2))
 		},
 			Entry("generic emap test", NewGenericEMap()),
-			Entry("strict emap test", NewStrictEmapWrapper()),
+			Entry("strict emap test", NewStrictEmapWrapper("key", "value", "index")),
 			Entry("nolock emap test", NewUnlockEMap()),
 		)
 
@@ -154,7 +154,7 @@ var _ = Describe("Tests of emap", func() {
 			Expect(err).Should(HaveOccurred())
 		},
 			Entry("generic emap test", NewGenericEMap()),
-			Entry("strict emap test", NewStrictEmapWrapper()),
+			Entry("strict emap test", NewStrictEmapWrapper("key", "value", "index")),
 			Entry("nolock emap test", NewUnlockEMap()),
 		)
 	})
@@ -182,7 +182,7 @@ var _ = Describe("Tests of emap", func() {
 			Expect(emap.KeyNumOfIndex("index2")).To(BeEquivalentTo(2))
 		},
 			Entry("generic emap test", NewGenericEMap()),
-			Entry("strict emap test", NewStrictEmapWrapper()),
+			Entry("strict emap test", NewStrictEmapWrapper("key", "value", "index")),
 			Entry("nolock emap test", NewUnlockEMap()),
 		)
 
@@ -209,9 +209,13 @@ var _ = Describe("Tests of emap", func() {
 			result3, err := emap.FetchByIndex("index2")
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(result3).To(BeEquivalentTo([]interface{}{"value1"}))
+
+			err = emap.RemoveIndex("key2", "index1")
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(emap.KeyNumOfIndex("index1")).To(BeEquivalentTo(0))
 		},
 			Entry("generic emap test", NewGenericEMap()),
-			Entry("strict emap test", NewStrictEmapWrapper()),
+			Entry("strict emap test", NewStrictEmapWrapper("key", "value", "index")),
 			Entry("nolock emap test", NewUnlockEMap()),
 		)
 
@@ -236,7 +240,7 @@ var _ = Describe("Tests of emap", func() {
 			Expect(result1).To(BeEquivalentTo([]interface{}{"value2", "value3"}))
 		},
 			Entry("generic emap test", NewGenericEMap()),
-			Entry("strict emap test", NewStrictEmapWrapper()),
+			Entry("strict emap test", NewStrictEmapWrapper("key", "value", "index")),
 			Entry("nolock emap test", NewUnlockEMap()),
 		)
 
@@ -250,7 +254,7 @@ var _ = Describe("Tests of emap", func() {
 			Expect(err).Should(HaveOccurred())
 		},
 			Entry("generic emap test", NewGenericEMap()),
-			Entry("strict emap test", NewStrictEmapWrapper()),
+			Entry("strict emap test", NewStrictEmapWrapper("key", "value", "index")),
 			Entry("nolock emap test", NewUnlockEMap()),
 		)
 
@@ -277,7 +281,7 @@ var _ = Describe("Tests of emap", func() {
 			Expect(emap.IndexNum()).To(BeEquivalentTo(2))
 		},
 			Entry("generic emap test", NewGenericEMap()),
-			Entry("strict emap test", NewStrictEmapWrapper()),
+			Entry("strict emap test", NewStrictEmapWrapper("key", "value", "index")),
 			Entry("nolock emap test", NewUnlockEMap()),
 		)
 
@@ -296,7 +300,7 @@ var _ = Describe("Tests of emap", func() {
 			Expect(result).To(BeEquivalentTo([]interface{}{"value1", "value2"}))
 		},
 			Entry("generic emap test", NewGenericEMap()),
-			Entry("strict emap test", NewStrictEmapWrapper()),
+			Entry("strict emap test", NewStrictEmapWrapper("key", "value", "index")),
 			Entry("nolock emap test", NewUnlockEMap()),
 		)
 	})
@@ -393,11 +397,17 @@ var _ = Describe("Tests of emap", func() {
 
 			err = emap.DeleteByKey(123)
 			Expect(err).Should(HaveOccurred())
+			err = emap.DeleteByIndex("123")
+			Expect(err).Should(HaveOccurred())
 			_, err = emap.FetchByKey(123)
 			Expect(err).Should(HaveOccurred())
 			_, err = emap.FetchByIndex("123")
 			Expect(err).Should(HaveOccurred())
 			err = emap.AddIndex("key", "123")
+			Expect(err).Should(HaveOccurred())
+			err = emap.AddIndex(123, 123)
+			Expect(err).Should(HaveOccurred())
+			err = emap.RemoveIndex("key", "123")
 			Expect(err).Should(HaveOccurred())
 			err = emap.RemoveIndex(123, 123)
 			Expect(err).Should(HaveOccurred())
@@ -407,26 +417,15 @@ var _ = Describe("Tests of emap", func() {
 	})
 
 	Context("Higher-order functions", func() {
-		var (
-			emap EMap
-		)
-
 		type testStruct struct {
 			data string
 		}
+
 		type anotherStruct struct {
 			data string
 		}
 
-		BeforeEach(func() {
-			emap = NewGenericEMap()
-		})
-
-		AfterEach(func() {
-			emap = nil
-		})
-
-		It("Given an emap, when call Transform interface, it should return the trasformed values related to the callback.", func() {
+		DescribeTable("Given an emap, when call Transform interface, it should return the trasformed values related to the callback.", func(emap EMap) {
 			emap.Insert("key1", 1, "index1")
 			emap.Insert("key2", 2, "index2")
 			emap.Insert("key3", 3, "index3")
@@ -441,9 +440,13 @@ var _ = Describe("Tests of emap", func() {
 			Expect(targets["key1"]).Should(BeEquivalentTo(11))
 			Expect(targets["key2"]).Should(BeEquivalentTo(12))
 			Expect(targets["key3"]).Should(BeEquivalentTo(13))
-		})
+		},
+			Entry("generic emap test", NewGenericEMap()),
+			Entry("strict emap test", NewStrictEmapWrapper("key", 0, "index")),
+			Entry("nolock emap test", NewUnlockEMap()),
+		)
 
-		It("Given an emap, when call Transform interface, it should fail when callback fails.", func() {
+		DescribeTable("Given an emap, when call Transform interface, it should fail when callback fails.", func(emap EMap) {
 			emap.Insert("key1", 1, "index1")
 			emap.Insert("key2", 2, "index2")
 			emap.Insert("key3", 3, "index3")
@@ -459,9 +462,13 @@ var _ = Describe("Tests of emap", func() {
 			targets, err := emap.Transform(callback)
 			Expect(err).Should(HaveOccurred())
 			Expect(len(targets)).Should(BeEquivalentTo(0))
-		})
+		},
+			Entry("generic emap test", NewGenericEMap()),
+			Entry("strict emap test", NewStrictEmapWrapper("key", 0, "index")),
+			Entry("nolock emap test", NewUnlockEMap()),
+		)
 
-		It("Given an emap, when call Foreach interface, it should apply callback to each item.", func() {
+		DescribeTable("Given an emap, when call Foreach interface, it should apply callback to each item.", func(emap EMap) {
 			type testStruct struct {
 				num int
 			}
@@ -477,7 +484,11 @@ var _ = Describe("Tests of emap", func() {
 			Expect(emap.FetchByKey("key1")).To(BeEquivalentTo(&testStruct{11}))
 			Expect(emap.FetchByKey("key2")).To(BeEquivalentTo(&testStruct{12}))
 			Expect(emap.FetchByKey("key3")).To(BeEquivalentTo(&testStruct{13}))
-		})
+		},
+			Entry("generic emap test", NewGenericEMap()),
+			Entry("strict emap test", NewStrictEmapWrapper("key", &testStruct{"value"}, "index")),
+			Entry("nolock emap test", NewUnlockEMap()),
+		)
 	})
 
 	Context("benchmark emap", func() {
@@ -531,8 +542,8 @@ var _ = Describe("Tests of emap", func() {
 	})
 })
 
-func NewStrictEmapWrapper() (emap EMap) {
-	emap, _ = NewStrictEMap("key", "value", "index")
+func NewStrictEmapWrapper(key interface{}, value interface{}, index interface{}) (emap EMap) {
+	emap, _ = NewStrictEMap(key, value, index)
 	return
 }
 

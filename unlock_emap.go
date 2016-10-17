@@ -1,10 +1,5 @@
 // Copyright(c) 2016 Ethan Zhuang <zhuangwj@gmail.com>.
 
-// Package emap implements an enhanced map in golang.
-// The main enhancement of emap over original golang map is the support of searching index.
-// Values in the emap can have one or more indices which can be used to search or delete.
-// Key in the emap must be unique as same as the key in the golang map.
-// Index in the emap is an N to M relation which mean a value can have multi indices and multi values can have one same index.
 package emap
 
 // UnlockEMap basically is a generic emap without internal locker or mutex.

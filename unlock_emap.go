@@ -7,7 +7,7 @@
 // Index in the emap is an N to M relation which mean a value can have multi indices and multi values can have one same index.
 package emap
 
-// Basically unlock emap is a generic emap without internal locker or mutex.
+// UnlockEMap basically is a generic emap without internal locker or mutex.
 // So unlock emap is not concurrent safe, it is only suitable for those models like Event Loop to achieve better performance.
 type UnlockEMap struct {
 	values  map[interface{}]interface{}   // key -> value

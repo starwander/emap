@@ -13,7 +13,7 @@ import (
 	"sync"
 )
 
-// The strict emap has a read-write locker inside so it is concurrent safe.
+// StrictEMap has a read-write locker inside so it is concurrent safe.
 // The type of key, value and index is determined by the input keySample, valueSample and indexSample.
 // Only the types of the sample inputs matter, the values of the sample inputs are irrelevant.
 // All methods of the strict emap must use the same type of the sample inputs otherwise an error will be returned.

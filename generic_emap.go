@@ -13,7 +13,7 @@ import (
 	"sync"
 )
 
-// The generic emap has a read-write locker inside so it is concurrent safe.
+// GenericEMap has a read-write locker inside so it is concurrent safe.
 // The value, key and index type is unlimited in the generic emap.
 type GenericEMap struct {
 	mtx      sync.RWMutex

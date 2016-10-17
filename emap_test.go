@@ -10,6 +10,24 @@ import (
 	"time"
 )
 
+type EMap interface {
+	Insert(key interface{}, value interface{}, indices ...interface{}) error
+	FetchByKey(key interface{}) (interface{}, error)
+	FetchByIndex(index interface{}) ([]interface{}, error)
+	DeleteByKey(key interface{}) error
+	DeleteByIndex(index interface{}) error
+	AddIndex(key interface{}, index interface{}) error
+	RemoveIndex(key interface{}, index interface{}) error
+	KeyNum() int
+	KeyNumOfIndex(index interface{}) int
+	IndexNum() int
+	IndexNumOfKey(key interface{}) int
+	HasKey(key interface{}) bool
+	HasIndex(index interface{}) bool
+	Transform(callback func(interface{}, interface{}) (interface{}, error)) (map[interface{}]interface{}, error)
+	Foreach(callback func(interface{}, interface{}))
+}
+
 var _ = Describe("Tests of emap", func() {
 	Context("one unique key and multi indices", func() {
 		DescribeTable("Given an empty emap, when add a new item, it should be able to get by key or index later.", func(emap EMap) {

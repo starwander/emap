@@ -1,8 +1,8 @@
 ## Enhanced Golang Map
-[![Build Status](https://travis-ci.org/starwander/EMap.svg?branch=master)](https://travis-ci.org/starwander/EMap)
-[![codecov](https://codecov.io/gh/starwander/EMap/branch/master/graph/badge.svg)](https://codecov.io/gh/starwander/EMap)
-[![Go Report Card](https://goreportcard.com/badge/github.com/starwander/EMap)](https://goreportcard.com/report/github.com/starwander/EMap)
-[![GoDoc](https://godoc.org/github.com/starwander/EMap?status.svg)](https://godoc.org/github.com/starwander/EMap)
+[![Build Status](https://travis-ci.org/starwander/emap.svg?branch=master)](https://travis-ci.org/starwander/emap)
+[![codecov](https://codecov.io/gh/starwander/emap/branch/master/graph/badge.svg)](https://codecov.io/gh/starwander/emap)
+[![Go Report Card](https://goreportcard.com/badge/github.com/starwander/emap)](https://goreportcard.com/report/github.com/starwander/emap)
+[![GoDoc](https://godoc.org/github.com/starwander/emap?status.svg)](https://godoc.org/github.com/starwander/emap)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
 EMap implements an enhanced map in [Golang](https://golang.org/).
@@ -34,7 +34,7 @@ The main enhancement of emap over original golang map is the support of searchin
 ##Requirements
 #####Download this package
 
-    go get github.com/starwander/EMap
+    go get github.com/starwander/emap
 
 #####Implements ExpirableValue interface of this package for all values if ExpirableEmap is chosen
 ```go
@@ -79,7 +79,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/starwander/EMap"
+	"github.com/starwander/emap"
 	"time"
 )
 
@@ -168,7 +168,7 @@ func main() {
 
 ## Reference
 
-[GoDoc](https://godoc.org/github.com/starwander/EMap)
+[GoDoc](https://godoc.org/github.com/starwander/emap)
 
 ## LICENSE
 

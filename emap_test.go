@@ -166,6 +166,16 @@ var _ = Describe("Tests of emap", func() {
 			Entry("nolock emap test", NewUnlockEMap()),
 		)
 
+		DescribeTable("Given an emap with key1 and index1, when remove index2 from key1, it should fail.", func(emap EMap) {
+			emap.Insert("key1", "value1", "index1")
+			err := emap.RemoveIndex("key1", "index2")
+			Expect(err).Should(HaveOccurred())
+		},
+			Entry("generic emap test", NewGenericEMap()),
+			Entry("strict emap test", NewStrictEmapWrapper("key", "value", "index")),
+			Entry("nolock emap test", NewUnlockEMap()),
+		)
+
 		DescribeTable("Given an emap with key1 and index1, when remove index from a non-existed key, it should fail.", func(emap EMap) {
 			emap.Insert("key1", "value1", "index1")
 			err := emap.RemoveIndex("key2", "index1")

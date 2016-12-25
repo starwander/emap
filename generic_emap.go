@@ -164,6 +164,61 @@ func (m *GenericEMap) RemoveIndex(key interface{}, index interface{}) error {
 	return removeIndex(m.keys, m.indices, key, index)
 }
 
+// Check checks the internal storage consistency.
+// If check fails, an error will be returned to explain the inconsistency.
+func (m *GenericEMap) check() error {
+	m.mtx.Lock()
+	defer m.mtx.Unlock()
+
+	if len(m.keys) != len(m.values) {
+		return errors.New("total key number not equal to total value number")
+	}
+
+	for key, indices := range m.keys {
+		if _, existed := m.values[key]; existed {
+			for _, index := range indices {
+				if keys, existed := m.indices[index]; existed {
+					found := false
+					for _, each := range keys {
+						if each == key {
+							found = true
+							break
+						}
+					}
+					if !found {
+						return errors.New("key storage is not consistent with index storage")
+					}
+				} else {
+					return errors.New("index not existed in the index storage")
+				}
+			}
+		} else {
+			return errors.New("key not existed in the value storage")
+		}
+	}
+
+	for index, keys := range m.indices {
+		for _, key := range keys {
+			if indices, existed := m.keys[key]; existed {
+				found := false
+				for _, each := range indices {
+					if each == index {
+						found = true
+						break
+					}
+				}
+				if !found {
+					return errors.New("index storage is not consistent with key storage")
+				}
+			} else {
+				return errors.New("key not existed in the key storage")
+			}
+		}
+	}
+
+	return nil
+}
+
 // Transform is a higher-order operation which apply the input callback function to each key-value pair in the emap.
 // Any error returned by the callback function will interrupt the transforming and the error will be returned.
 // If transform successfully, a new golang map is created with each key-value pair returned by the input callback function.

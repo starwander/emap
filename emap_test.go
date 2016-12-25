@@ -568,6 +568,39 @@ var _ = Describe("Tests of emap", func() {
 			Ω(EMapRuntime.Seconds()).Should(BeNumerically("<", 2), "Add/Get/Del 200000 values shouldn't take too long.")
 		}, 10)
 	})
+
+	Context("debug", func() {
+		var (
+			emap *GenericEMap
+		)
+
+		BeforeEach(func() {
+			emap = NewGenericEMap()
+		})
+
+		AfterEach(func() {
+		})
+
+		It("Fix the unconsistency caused by deleteByKey", func() {
+			emap.Insert("key1", "value1", "index1", "index2", "index3")
+			emap.Insert("key2", "value2", "index1", "index2", "index3")
+			emap.Insert("key3", "value3", "index1", "index2", "index3")
+			Expect(emap.check()).ShouldNot(HaveOccurred())
+
+			emap.DeleteByKey("key1")
+			Expect(emap.check()).ShouldNot(HaveOccurred())
+		})
+
+		It("Fix the unconsistency caused by deleteByIndex", func() {
+			emap.Insert("key1", "value1", "index1", "index2", "index3")
+			emap.Insert("key2", "value2", "index1", "index2", "index3")
+			emap.Insert("key3", "value3", "index1", "index2", "index3")
+			Expect(emap.check()).ShouldNot(HaveOccurred())
+
+			emap.DeleteByIndex("index1")
+			Expect(emap.check()).ShouldNot(HaveOccurred())
+		})
+	})
 })
 
 func NewStrictEmapWrapper(key interface{}, value interface{}, index interface{}) (emap EMap) {

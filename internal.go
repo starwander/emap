@@ -55,7 +55,12 @@ func deleteByKey(valueStore map[interface{}]interface{}, keyStore map[interface{
 		return errors.New("key not exist")
 	}
 
-	for _, index := range keyStore[key] {
+	indices := make([]interface{}, len(keyStore[key]))
+	for i := range indices {
+		indices[i] = keyStore[key][i]
+	}
+
+	for _, index := range indices {
 		removeIndex(keyStore, indexStore, key, index)
 	}
 
@@ -70,7 +75,12 @@ func deleteByIndex(valueStore map[interface{}]interface{}, keyStore map[interfac
 		return errors.New("index not exist")
 	}
 
-	for _, key := range indexStore[index] {
+	keys := make([]interface{}, len(indexStore[index]))
+	for i := range keys {
+		keys[i] = indexStore[index][i]
+	}
+
+	for _, key := range keys {
 		deleteByKey(valueStore, keyStore, indexStore, key)
 	}
 
